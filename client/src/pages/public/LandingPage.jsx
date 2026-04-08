@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
+import api from "../../api/client.js";
 import LoginForm from "../../components/auth/LoginForm.jsx";
 import RegisterForm from "../../components/auth/RegisterForm.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -11,11 +12,24 @@ const examPointers = [
   "This portal is designed to help aspirants practice subject-wise tests as well as full length tests from one place.",
 ];
 
+const featuredMathFlts = [
+  { year: "2023", session: "June" },
+  { year: "2023", session: "December" },
+  { year: "2024", session: "June" },
+  { year: "2024", session: "December" },
+  { year: "2025", session: "June" },
+  { year: "2025", session: "December" },
+];
+
+const normalizeText = (value = "") => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
 const LandingPage = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalClosing, setAuthModalClosing] = useState(false);
   const [authMode, setAuthMode] = useState("login");
+  const [fullLengthCategories, setFullLengthCategories] = useState([]);
 
   const closeAuthModal = () => {
     setAuthModalClosing(true);
@@ -47,6 +61,58 @@ const LandingPage = () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [authModalOpen]);
+
+  useEffect(() => {
+    if (!user) {
+      setFullLengthCategories([]);
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    const loadFullLengthCategories = async () => {
+      try {
+        const { data } = await api.get("/categories", { params: { testType: "flt" } });
+        if (isMounted) {
+          setFullLengthCategories(data);
+        }
+      } catch (_error) {
+        if (isMounted) {
+          setFullLengthCategories([]);
+        }
+      }
+    };
+
+    loadFullLengthCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
+
+  const handleFeaturedMockAccess = (year, session) => {
+    if (!user) {
+      setAuthMode("login");
+      setAuthModalOpen(true);
+      return;
+    }
+
+    const matchedCategory = fullLengthCategories.find((category) => {
+      const haystack = normalizeText(`${category.name} ${category.slug} ${category.description}`);
+      return (
+        haystack.includes("math") &&
+        haystack.includes(year) &&
+        haystack.includes(normalizeText(session))
+      );
+    });
+
+    if (matchedCategory?._id) {
+      navigate(`/tests/start/${matchedCategory._id}`);
+      return;
+    }
+
+    navigate("/dashboard");
+  };
 
   return (
     <div className="home-page">
@@ -99,6 +165,34 @@ const LandingPage = () => {
                   Read Exam Info
                 </a>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="featured-tests-section">
+          <div className="home-shell">
+            <div className="section-heading">
+              <div>
+                <p className="section-tag">Mathematical Sciences MA</p>
+                <h2>Full length mock tests for June and December sessions from 2023 to 2025.</h2>
+              </div>
+            </div>
+
+            <div className="featured-tests-grid">
+              {featuredMathFlts.map((item) => (
+                <article key={`${item.year}-${item.session}`} className="featured-test-card">
+                  <p className="featured-test-year">{item.year}</p>
+                  <h3>{item.session} Full Length Mock Test</h3>
+                  <p>Mathematical Sciences MA full length practice set with protected access.</p>
+                  <button
+                    type="button"
+                    className="button"
+                    onClick={() => handleFeaturedMockAccess(item.year, item.session)}
+                  >
+                    {user ? "Access mock test" : "Login to access"}
+                  </button>
+                </article>
+              ))}
             </div>
           </div>
         </section>

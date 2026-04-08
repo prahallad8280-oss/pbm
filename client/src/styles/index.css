@@ -205,6 +205,46 @@ select {
   margin-top: 1.6rem;
 }
 
+.featured-tests-section {
+  padding: 2.8rem 0 3.2rem;
+  background: #fff1f3;
+}
+
+.featured-tests-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
+  margin-top: 1.2rem;
+}
+
+.featured-test-card {
+  padding: 1.4rem;
+  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid rgba(18, 38, 63, 0.08);
+  box-shadow: 0 16px 36px rgba(152, 68, 87, 0.1);
+}
+
+.featured-test-card h3 {
+  margin: 0.15rem 0 0.75rem;
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.featured-test-card p {
+  margin: 0 0 1rem;
+  color: #53647d;
+}
+
+.featured-test-year {
+  margin: 0;
+  color: #b04a16;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 .section-heading {
   display: flex;
   justify-content: space-between;
@@ -956,6 +996,7 @@ select {
 }
 
 @media (max-width: 1024px) {
+  .featured-tests-grid,
   .content-layout,
   .about-layout,
   .contact-layout,
@@ -1012,11 +1053,16 @@ select {
     font-size: clamp(1.9rem, 7vw, 2.8rem);
   }
 
+  .featured-tests-grid {
+    grid-template-columns: 1fr;
+  }
+
   .options-grid,
   .field-grid {
     grid-template-columns: 1fr;
   }
 
+  .featured-test-card,
   .content-aside,
   .about-points div,
   .hero-card,
