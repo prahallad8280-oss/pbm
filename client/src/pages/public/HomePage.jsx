@@ -1,4 +1,8 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+
+import LoginForm from "../../components/auth/LoginForm.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 const examPointers = [
   "CSIR NET is conducted for Junior Research Fellowship and eligibility for lectureship or assistant professor roles in science streams.",
@@ -6,7 +10,42 @@ const examPointers = [
   "This portal is designed to help aspirants practice subject-wise tests as well as full length tests from one place.",
 ];
 
-const HomePage = () => (
+const HomePage = () => {
+  const { user } = useAuth();
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [loginModalClosing, setLoginModalClosing] = useState(false);
+
+  const closeLoginModal = () => {
+    setLoginModalClosing(true);
+    window.setTimeout(() => {
+      setLoginModalOpen(false);
+      setLoginModalClosing(false);
+    }, 220);
+  };
+
+  useEffect(() => {
+    if (!loginModalOpen) {
+      return undefined;
+    }
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closeLoginModal();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [loginModalOpen]);
+
+  return (
     <div className="home-page">
       <div className="home-topbar">CSIR NET mock tests for Lectureship and JRF preparation</div>
 
@@ -21,7 +60,13 @@ const HomePage = () => (
           </Link>
 
           <nav className="site-nav">
-            <Link to="/login">Login</Link>
+            {user ? (
+              <Link to={user.role === "admin" ? "/admin" : "/dashboard"}>Dashboard</Link>
+            ) : (
+              <button type="button" className="site-nav-button" onClick={() => setLoginModalOpen(true)}>
+                Login
+              </button>
+            )}
             <a href="#about">About Me</a>
             <a href="#contact">Contact</a>
           </nav>
@@ -150,7 +195,29 @@ const HomePage = () => (
           </div>
         </div>
       </footer>
+
+      {loginModalOpen ? (
+        <div
+          className={`auth-modal-overlay ${loginModalClosing ? "closing" : ""}`}
+          onClick={closeLoginModal}
+          role="presentation"
+        >
+          <div
+            className={`auth-modal-shell ${loginModalClosing ? "closing" : ""}`}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Login"
+          >
+            <button type="button" className="auth-modal-close" onClick={closeLoginModal} aria-label="Close login">
+              ×
+            </button>
+            <LoginForm showRegisterLink={false} onSuccess={() => setLoginModalOpen(false)} />
+          </div>
+        </div>
+      ) : null}
     </div>
-);
+  );
+};
 
 export default HomePage;

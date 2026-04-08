@@ -138,12 +138,21 @@ select {
 }
 
 .site-nav a,
+.site-nav-button,
 .footer-links a {
   color: #243651;
   font-weight: 600;
 }
 
+.site-nav-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
 .site-nav a:hover,
+.site-nav-button:hover,
 .footer-links a:hover {
   color: #a51417;
 }
@@ -325,6 +334,123 @@ select {
 
 .site-footer .footer-links a:hover {
   color: #ffffff;
+}
+
+.auth-standalone {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1rem;
+  background:
+    radial-gradient(circle at top, rgba(255, 222, 226, 0.8), transparent 36%),
+    linear-gradient(180deg, #fff6f2 0%, #fffdfc 100%);
+}
+
+.auth-card-compact {
+  width: min(100%, 26rem);
+  margin: 0;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.auth-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(9, 20, 35, 0.42);
+  backdrop-filter: blur(5px);
+  animation: authOverlayIn 0.22s ease forwards;
+  z-index: 60;
+}
+
+.auth-modal-overlay.closing {
+  animation: authOverlayOut 0.2s ease forwards;
+}
+
+.auth-modal-shell {
+  position: relative;
+  width: min(100%, 28rem);
+  animation: authModalIn 0.24s ease forwards;
+}
+
+.auth-modal-shell.closing {
+  animation: authModalOut 0.2s ease forwards;
+}
+
+.auth-modal-shell .auth-card-compact {
+  width: 100%;
+  box-shadow: 0 28px 60px rgba(13, 26, 44, 0.22);
+}
+
+.auth-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.9rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(18, 38, 63, 0.06);
+  color: #334862;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.auth-modal-close:hover {
+  background: rgba(18, 38, 63, 0.12);
+}
+
+@keyframes authOverlayIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes authOverlayOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes authModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes authModalOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
 }
 
 .auth-page {
@@ -852,6 +978,14 @@ select {
     width: 100%;
     justify-content: flex-start;
     gap: 1rem 1.2rem;
+  }
+
+  .auth-modal-overlay {
+    padding: 0.75rem;
+  }
+
+  .auth-modal-shell {
+    width: 100%;
   }
 
   .landing-hero {
