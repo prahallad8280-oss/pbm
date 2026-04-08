@@ -188,15 +188,6 @@ select {
   margin-top: 1.6rem;
 }
 
-.subject-showcase {
-  padding: 2.8rem 0 3rem;
-  background: #ffe0e4;
-}
-
-.classic-heading {
-  margin-bottom: 1.2rem;
-}
-
 .section-heading {
   display: flex;
   justify-content: space-between;
@@ -210,78 +201,6 @@ select {
 .about-text h2,
 .contact-layout h2 {
   margin: 0.25rem 0 0;
-}
-
-.subject-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
-}
-
-.subject-panel {
-  overflow: hidden;
-  border-radius: 28px;
-  background: #fff;
-  border: 2px solid rgba(18, 38, 63, 0.08);
-  box-shadow: 0 18px 40px rgba(151, 67, 82, 0.12);
-}
-
-.subject-panel-header {
-  min-height: 106px;
-  padding: 1.5rem 1.7rem;
-  color: #ffffff;
-}
-
-.subject-panel-header h3 {
-  margin: 0;
-  font-size: 1.9rem;
-  line-height: 1.1;
-}
-
-.subject-panel-body {
-  padding: 1.35rem 1.45rem 1.55rem;
-  background: rgba(255, 255, 255, 0.85);
-}
-
-.subject-panel-body p {
-  margin: 0 0 1.1rem;
-  color: #50617a;
-}
-
-.subject-panel-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.95rem 1.55rem;
-  border-radius: 999px;
-  background: #14894d;
-  color: #ffffff;
-  font-weight: 700;
-  min-width: 190px;
-}
-
-.subject-panel-link:hover {
-  background: #0f7441;
-}
-
-.subject-violet .subject-panel-header {
-  background: linear-gradient(135deg, #7241c8, #5d3ab8);
-}
-
-.subject-pink .subject-panel-header {
-  background: linear-gradient(135deg, #df3d87, #c42b74);
-}
-
-.subject-blue .subject-panel-header {
-  background: linear-gradient(135deg, #2b7bf0, #1f63cf);
-}
-
-.subject-green .subject-panel-header {
-  background: linear-gradient(135deg, #31c79d, #22aa81);
-}
-
-.subject-forest .subject-panel-header {
-  background: linear-gradient(135deg, #24995d, #1c7e4d);
 }
 
 .content-section {
@@ -895,7 +814,6 @@ select {
 }
 
 @media (max-width: 1024px) {
-  .subject-grid,
   .content-layout,
   .about-layout,
   .contact-layout,
@@ -944,21 +862,11 @@ select {
     font-size: clamp(1.9rem, 7vw, 2.8rem);
   }
 
-  .subject-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .subject-panel-header h3 {
-    font-size: 1.55rem;
-  }
-
   .options-grid,
   .field-grid {
     grid-template-columns: 1fr;
   }
 
-  .subject-panel-header,
-  .subject-panel-body,
   .content-aside,
   .about-points div,
   .hero-card,

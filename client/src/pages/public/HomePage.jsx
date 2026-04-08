@@ -2,34 +2,6 @@ import { Link } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext.jsx";
 
-const subjects = [
-  {
-    title: "Physical Sciences",
-    summary: "Timed mock practice for concepts, numericals, and exam temperament.",
-    tone: "subject-violet",
-  },
-  {
-    title: "Mathematical Sciences",
-    summary: "Revision-driven test practice for pure and applied mathematical topics.",
-    tone: "subject-pink",
-  },
-  {
-    title: "Chemical Sciences",
-    summary: "Topic-wise and full-length practice with quick review after submission.",
-    tone: "subject-blue",
-  },
-  {
-    title: "Life Sciences",
-    summary: "Build retention, speed, and accuracy through regular structured tests.",
-    tone: "subject-green",
-  },
-  {
-    title: "Earth Sciences",
-    summary: "Practice mock questions in an exam-like format with result analysis.",
-    tone: "subject-forest",
-  },
-];
-
 const examPointers = [
   "CSIR NET is conducted for Junior Research Fellowship and eligibility for lectureship or assistant professor roles in science streams.",
   "Preparation works best when concept revision is paired with timed mock practice and honest review of mistakes.",
@@ -82,34 +54,6 @@ const HomePage = () => {
                   Read Exam Info
                 </a>
               </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="subject-showcase">
-          <div className="home-shell">
-            <div className="section-heading classic-heading">
-              <div>
-                <p className="section-tag">Practice subjects</p>
-                <h2>Select your stream and start regular mock practice.</h2>
-              </div>
-            </div>
-
-            <div className="subject-grid">
-              {subjects.map((subject) => (
-                <article key={subject.title} className={`subject-panel ${subject.tone}`}>
-                  <div className="subject-panel-header">
-                    <h3>{subject.title}</h3>
-                  </div>
-
-                  <div className="subject-panel-body">
-                    <p>{subject.summary}</p>
-                    <Link to={entryPath} className="subject-panel-link">
-                      Start Mock Test
-                    </Link>
-                  </div>
-                </article>
-              ))}
             </div>
           </div>
         </section>
