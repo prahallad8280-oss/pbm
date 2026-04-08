@@ -7,7 +7,7 @@ import CategoryManagerPage from "./pages/admin/CategoryManagerPage.jsx";
 import QuestionManagerPage from "./pages/admin/QuestionManagerPage.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
-import HomePage from "./pages/public/HomePage.jsx";
+import LandingPage from "./pages/public/LandingPage.jsx";
 import AttemptHistoryPage from "./pages/user/AttemptHistoryPage.jsx";
 import DashboardPage from "./pages/user/DashboardPage.jsx";
 import TestAttemptPage from "./pages/user/TestAttemptPage.jsx";
@@ -15,7 +15,7 @@ import TestResultPage from "./pages/user/TestResultPage.jsx";
 
 const App = () => (
   <Routes>
-    <Route path="/" element={<HomePage />} />
+    <Route path="/" element={<LandingPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
 

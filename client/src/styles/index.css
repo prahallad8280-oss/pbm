@@ -151,6 +151,14 @@ select {
   cursor: pointer;
 }
 
+.footer-action-button {
+  color: rgba(246, 249, 255, 0.84);
+}
+
+.footer-action-button:hover {
+  color: #ffffff;
+}
+
 .site-nav a:hover,
 .site-nav-button:hover,
 .footer-links a:hover {
@@ -540,9 +548,17 @@ select {
 }
 
 .auth-switch a,
+.auth-text-button,
 .table-link {
   color: var(--primary);
   font-weight: 700;
+}
+
+.auth-text-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
 }
 
 .field,
