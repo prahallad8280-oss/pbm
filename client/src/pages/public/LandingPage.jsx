@@ -13,7 +13,7 @@ const examPointers = [
 ];
 
 const featuredMathFlts = [
-  { year: "2023", session: "June" },
+  { year: "2023", session: "June", isOpenSample: true, featuredKey: "mathematics-ma-2023-june" },
   { year: "2023", session: "December" },
   { year: "2024", session: "June" },
   { year: "2024", session: "December" },
@@ -114,6 +114,16 @@ const LandingPage = () => {
     navigate("/dashboard");
   };
 
+  const handleExploreMore = () => {
+    if (!user) {
+      setAuthMode("login");
+      setAuthModalOpen(true);
+      return;
+    }
+
+    navigate("/dashboard");
+  };
+
   return (
     <div className="home-page">
       <div className="home-topbar">CSIR NET mock tests for Lectureship and JRF preparation</div>
@@ -183,16 +193,36 @@ const LandingPage = () => {
                 <article key={`${item.year}-${item.session}`} className="featured-test-card">
                   <p className="featured-test-year">{item.year}</p>
                   <h3>{item.session} Full Length Mock Test</h3>
-                  <p>Mathematical Sciences MA full length practice set with protected access.</p>
-                  <button
-                    type="button"
-                    className="button"
-                    onClick={() => handleFeaturedMockAccess(item.year, item.session)}
-                  >
-                    {user ? "Access mock test" : "Login to access"}
-                  </button>
+                  <p>
+                    {item.isOpenSample
+                      ? "Mathematical Sciences MA open sample test. No login is required for this one."
+                      : "Mathematical Sciences MA full length practice set with protected access."}
+                  </p>
+                  {item.isOpenSample ? (
+                    <button
+                      type="button"
+                      className="button"
+                      onClick={() => navigate(`/open-tests/${item.featuredKey}`)}
+                    >
+                      Start free test
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="button"
+                      onClick={() => handleFeaturedMockAccess(item.year, item.session)}
+                    >
+                      {user ? "Access mock test" : "Login to access"}
+                    </button>
+                  )}
                 </article>
               ))}
+            </div>
+
+            <div className="featured-tests-actions">
+              <button type="button" className="button button-secondary" onClick={handleExploreMore}>
+                Explore more
+              </button>
             </div>
           </div>
         </section>
