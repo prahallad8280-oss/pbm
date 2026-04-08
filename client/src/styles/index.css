@@ -397,10 +397,9 @@ select {
   resize: vertical;
 }
 
-.feedback-note {
-  margin: 0;
-  color: #657891;
-  font-size: 0.94rem;
+.form-success {
+  color: var(--success);
+  font-weight: 600;
 }
 
 .site-footer {

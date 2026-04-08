@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import feedbackRoutes from "./routes/feedbackRoutes.js";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/feedback", feedbackRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/tests", testRoutes);
 app.use("/api/admin", adminRoutes);
@@ -35,4 +37,3 @@ app.use(notFound);
 app.use(errorHandler);
 
 export default app;
-

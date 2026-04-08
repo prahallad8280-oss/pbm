@@ -36,6 +36,8 @@ const LandingPage = () => {
     message: "",
   });
   const [feedbackError, setFeedbackError] = useState("");
+  const [feedbackSuccess, setFeedbackSuccess] = useState("");
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
 
   const closeAuthModal = () => {
     setAuthModalClosing(true);
@@ -96,6 +98,18 @@ const LandingPage = () => {
     };
   }, [user]);
 
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    setFeedbackForm((current) => ({
+      ...current,
+      name: current.name || user.name || "",
+      email: current.email || user.email || "",
+    }));
+  }, [user]);
+
   const handleFeaturedMockAccess = (year, session) => {
     if (!user) {
       setAuthMode("login");
@@ -146,13 +160,19 @@ const LandingPage = () => {
 
   const handleFeedbackChange = (event) => {
     const { name, value } = event.target;
+    if (feedbackError) {
+      setFeedbackError("");
+    }
+    if (feedbackSuccess) {
+      setFeedbackSuccess("");
+    }
     setFeedbackForm((current) => ({
       ...current,
       [name]: value,
     }));
   };
 
-  const handleFeedbackSubmit = (event) => {
+  const handleFeedbackSubmit = async (event) => {
     event.preventDefault();
 
     if (!feedbackForm.name.trim() || !feedbackForm.email.trim() || !feedbackForm.message.trim()) {
@@ -161,19 +181,27 @@ const LandingPage = () => {
     }
 
     setFeedbackError("");
+    setFeedbackSuccess("");
+    setFeedbackSubmitting(true);
 
-    const subject = encodeURIComponent(`CSIR NET Mock Test feedback from ${feedbackForm.name.trim()}`);
-    const body = encodeURIComponent(
-      [
-        `Name: ${feedbackForm.name.trim()}`,
-        `Email: ${feedbackForm.email.trim()}`,
-        "",
-        "Feedback:",
-        feedbackForm.message.trim(),
-      ].join("\n"),
-    );
+    try {
+      const { data } = await api.post("/feedback", {
+        name: feedbackForm.name.trim(),
+        email: feedbackForm.email.trim(),
+        message: feedbackForm.message.trim(),
+      });
 
-    window.location.href = `mailto:contact@csirmocktest.com?subject=${subject}&body=${body}`;
+      setFeedbackSuccess(data.message || "Feedback sent successfully.");
+      setFeedbackForm({
+        name: user?.name || "",
+        email: user?.email || "",
+        message: "",
+      });
+    } catch (error) {
+      setFeedbackError(error.response?.data?.message || "Unable to send feedback right now. Please try again.");
+    } finally {
+      setFeedbackSubmitting(false);
+    }
   };
 
   return (
@@ -342,7 +370,7 @@ const LandingPage = () => {
 
             <div className="contact-details">
               <p>
-                <strong>Email:</strong> contact@csirmocktest.com
+                <strong>Email:</strong> prahallad8280@zohomail.in
               </p>
               <p>
                 <strong>Support hours:</strong> Monday to Saturday
@@ -362,7 +390,8 @@ const LandingPage = () => {
               <h2>Tell us what should improve next on the platform.</h2>
               <p>
                 If you notice anything confusing, want a new mock-test feature, or have suggestions about the
-                interface, send your feedback here. This will open your email app with the message already filled in.
+                interface, send your feedback here. The message will be submitted directly from the website and sent
+                to the platform inbox.
               </p>
               <ul className="info-list">
                 <li>Report login or test-access issues.</li>
@@ -413,12 +442,11 @@ const LandingPage = () => {
               </label>
 
               {feedbackError ? <p className="form-error">{feedbackError}</p> : null}
+              {feedbackSuccess ? <p className="form-success">{feedbackSuccess}</p> : null}
 
-              <button type="submit" className="button">
-                Send feedback
+              <button type="submit" className="button" disabled={feedbackSubmitting}>
+                {feedbackSubmitting ? "Sending..." : "Send feedback"}
               </button>
-
-              <p className="feedback-note">This opens your default email app with your feedback prefilled.</p>
             </form>
           </div>
         </section>
