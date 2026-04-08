@@ -1,19 +1,12 @@
 import { Link } from "react-router-dom";
 
-import { useAuth } from "../../context/AuthContext.jsx";
-
 const examPointers = [
   "CSIR NET is conducted for Junior Research Fellowship and eligibility for lectureship or assistant professor roles in science streams.",
   "Preparation works best when concept revision is paired with timed mock practice and honest review of mistakes.",
   "This portal is designed to help aspirants practice subject-wise tests as well as full length tests from one place.",
 ];
 
-const HomePage = () => {
-  const { user } = useAuth();
-  const entryPath = user ? (user.role === "admin" ? "/admin" : "/dashboard") : "/login";
-  const entryLabel = user ? "Open Dashboard" : "Login";
-
-  return (
+const HomePage = () => (
     <div className="home-page">
       <div className="home-topbar">CSIR NET mock tests for Lectureship and JRF preparation</div>
 
@@ -47,9 +40,6 @@ const HomePage = () => {
               </p>
 
               <div className="landing-actions">
-                <Link to={entryPath} className="button">
-                  {entryLabel}
-                </Link>
                 <a href="#exam-info" className="button button-secondary">
                   Read Exam Info
                 </a>
@@ -161,7 +151,6 @@ const HomePage = () => {
         </div>
       </footer>
     </div>
-  );
-};
+);
 
 export default HomePage;
