@@ -30,6 +30,12 @@ const LandingPage = () => {
   const [authModalClosing, setAuthModalClosing] = useState(false);
   const [authMode, setAuthMode] = useState("login");
   const [fullLengthCategories, setFullLengthCategories] = useState([]);
+  const [feedbackForm, setFeedbackForm] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [feedbackError, setFeedbackError] = useState("");
 
   const closeAuthModal = () => {
     setAuthModalClosing(true);
@@ -136,6 +142,38 @@ const LandingPage = () => {
 
     setAuthMode("login");
     setAuthModalOpen(true);
+  };
+
+  const handleFeedbackChange = (event) => {
+    const { name, value } = event.target;
+    setFeedbackForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  };
+
+  const handleFeedbackSubmit = (event) => {
+    event.preventDefault();
+
+    if (!feedbackForm.name.trim() || !feedbackForm.email.trim() || !feedbackForm.message.trim()) {
+      setFeedbackError("Please fill in your name, email, and feedback before sending.");
+      return;
+    }
+
+    setFeedbackError("");
+
+    const subject = encodeURIComponent(`CSIR NET Mock Test feedback from ${feedbackForm.name.trim()}`);
+    const body = encodeURIComponent(
+      [
+        `Name: ${feedbackForm.name.trim()}`,
+        `Email: ${feedbackForm.email.trim()}`,
+        "",
+        "Feedback:",
+        feedbackForm.message.trim(),
+      ].join("\n"),
+    );
+
+    window.location.href = `mailto:contact@csirmocktest.com?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -314,6 +352,74 @@ const LandingPage = () => {
                 login.
               </p>
             </div>
+          </div>
+        </section>
+
+        <section id="feedback" className="feedback-section">
+          <div className="home-shell feedback-layout">
+            <div className="feedback-copy">
+              <p className="section-tag">Feedback</p>
+              <h2>Tell us what should improve next on the platform.</h2>
+              <p>
+                If you notice anything confusing, want a new mock-test feature, or have suggestions about the
+                interface, send your feedback here. This will open your email app with the message already filled in.
+              </p>
+              <ul className="info-list">
+                <li>Report login or test-access issues.</li>
+                <li>Suggest new subjects, past papers, or full length test sets.</li>
+                <li>Share ideas to make the platform simpler for students.</li>
+              </ul>
+            </div>
+
+            <form className="feedback-form-card form-card" onSubmit={handleFeedbackSubmit}>
+              <div className="form-card-header">
+                <div>
+                  <p className="section-tag">Share your thoughts</p>
+                  <h3>Send platform feedback</h3>
+                </div>
+              </div>
+
+              <label className="field">
+                <span>Name</span>
+                <input
+                  type="text"
+                  name="name"
+                  value={feedbackForm.name}
+                  onChange={handleFeedbackChange}
+                  placeholder="Your name"
+                />
+              </label>
+
+              <label className="field">
+                <span>Email</span>
+                <input
+                  type="email"
+                  name="email"
+                  value={feedbackForm.email}
+                  onChange={handleFeedbackChange}
+                  placeholder="Your email"
+                />
+              </label>
+
+              <label className="field">
+                <span>Feedback</span>
+                <textarea
+                  name="message"
+                  rows="5"
+                  value={feedbackForm.message}
+                  onChange={handleFeedbackChange}
+                  placeholder="Write your feedback, bug report, or suggestion here."
+                />
+              </label>
+
+              {feedbackError ? <p className="form-error">{feedbackError}</p> : null}
+
+              <button type="submit" className="button">
+                Send feedback
+              </button>
+
+              <p className="feedback-note">This opens your default email app with your feedback prefilled.</p>
+            </form>
           </div>
         </section>
       </main>

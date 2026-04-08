@@ -368,6 +368,41 @@ select {
   color: #4d5f79;
 }
 
+.feedback-section {
+  padding: 3.6rem 0 4.2rem;
+  background:
+    linear-gradient(180deg, rgba(255, 239, 235, 0.98), rgba(255, 247, 243, 0.96)),
+    #fff4ef;
+}
+
+.feedback-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.95fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.feedback-copy p {
+  color: #495b74;
+  line-height: 1.8;
+}
+
+.feedback-form-card {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.feedback-form-card textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.feedback-note {
+  margin: 0;
+  color: #657891;
+  font-size: 0.94rem;
+}
+
 .site-footer {
   padding: 1.5rem 0 2rem;
   background: #10233a;
@@ -1012,6 +1047,7 @@ select {
   .content-layout,
   .about-layout,
   .contact-layout,
+  .feedback-layout,
   .auth-page,
   .app-shell,
   .split-layout {
