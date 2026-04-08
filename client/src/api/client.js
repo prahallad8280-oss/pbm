@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: import.meta.env.VITE_API_URL?.trim() || "/api",
 });
 
 export const setAuthToken = (token) => {
@@ -13,4 +13,3 @@ export const setAuthToken = (token) => {
 };
 
 export default api;
-

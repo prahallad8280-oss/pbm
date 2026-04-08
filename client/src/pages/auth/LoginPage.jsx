@@ -25,7 +25,11 @@ const LoginPage = () => {
       const fallbackPath = loggedInUser.role === "admin" ? "/admin" : "/dashboard";
       navigate(location.state?.from?.pathname || fallbackPath, { replace: true });
     } catch (requestError) {
-      setError(requestError.response?.data?.message || "Unable to sign in.");
+      setError(
+        requestError.response?.data?.message ||
+          (requestError.request ? "Unable to reach the login server." : requestError.message) ||
+          "Unable to sign in.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -87,4 +91,3 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
-

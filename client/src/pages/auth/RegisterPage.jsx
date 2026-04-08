@@ -23,7 +23,11 @@ const RegisterPage = () => {
       await register(form);
       navigate("/dashboard", { replace: true });
     } catch (requestError) {
-      setError(requestError.response?.data?.message || "Unable to create account.");
+      setError(
+        requestError.response?.data?.message ||
+          (requestError.request ? "Unable to reach the registration server." : requestError.message) ||
+          "Unable to create account.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -96,4 +100,3 @@ const RegisterPage = () => {
 };
 
 export default RegisterPage;
-
