@@ -1,0 +1,120 @@
+import { useEffect, useState } from "react";
+import { useLocation, useParams } from "react-router-dom";
+
+import api from "../../api/client.js";
+import StatCard from "../../components/common/StatCard.jsx";
+
+const optionLabels = ["A", "B", "C", "D"];
+
+const formatDuration = (seconds = 0) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}m ${remainingSeconds}s`;
+};
+
+const TestResultPage = () => {
+  const { attemptId } = useParams();
+  const location = useLocation();
+  const [result, setResult] = useState(location.state?.result || null);
+  const [loading, setLoading] = useState(!location.state?.result);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (result) {
+      return;
+    }
+
+    const loadResult = async () => {
+      try {
+        const { data } = await api.get(`/tests/attempts/${attemptId}`);
+        setResult(data);
+      } catch (requestError) {
+        setError(requestError.response?.data?.message || "Unable to load the attempt report.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadResult();
+  }, [attemptId, result]);
+
+  if (loading) {
+    return <div className="screen-state">Loading result...</div>;
+  }
+
+  if (error || !result) {
+    return <div className="screen-state form-error">{error || "Result not found."}</div>;
+  }
+
+  return (
+    <div className="page-stack">
+      <section className="hero-card">
+        <div>
+          <p className="section-tag">Result summary</p>
+          <h2>{result.category?.name}</h2>
+          <p>
+            Submitted on {new Date(result.submittedAt).toLocaleString()} after {formatDuration(result.timeTakenSeconds)}.
+          </p>
+        </div>
+        <div className="stats-grid">
+          <StatCard label="Score" value={`${result.score}/${result.totalQuestions}`} hint="1 mark per correct answer" />
+          <StatCard label="Accuracy" value={`${result.accuracy}%`} hint="Correct answers percentage" />
+          <StatCard label="Incorrect" value={result.incorrectCount} hint="Questions answered incorrectly or skipped" />
+        </div>
+      </section>
+
+      <section className="content-section">
+        <div className="section-headline">
+          <div>
+            <p className="section-tag">Detailed solutions</p>
+            <h3>Review every question with answer keys and explanations.</h3>
+          </div>
+        </div>
+
+        <div className="results-list">
+          {result.responses.map((response, index) => (
+            <article key={`${response.questionId}-${index}`} className={`review-card ${response.isCorrect ? "correct" : "incorrect"}`}>
+              <div className="review-header">
+                <p className="section-tag">Question {index + 1}</p>
+                <span className={`pill ${response.isCorrect ? "" : "pill-danger"}`}>
+                  {response.isCorrect ? "Correct" : "Incorrect"}
+                </span>
+              </div>
+
+              <h4>{response.questionText}</h4>
+
+              <div className="review-options">
+                {response.options.map((option, optionIndex) => (
+                  <div
+                    key={`${response.questionId}-option-${optionIndex}`}
+                    className={`review-option ${
+                      optionIndex === response.correctAnswer ? "is-correct" : ""
+                    } ${optionIndex === response.selectedAnswer ? "is-selected" : ""}`}
+                  >
+                    <strong>{optionLabels[optionIndex]}.</strong> {option}
+                  </div>
+                ))}
+              </div>
+
+              <p>
+                <strong>Your answer:</strong>{" "}
+                {response.selectedAnswer === null || response.selectedAnswer === undefined
+                  ? "Not answered"
+                  : optionLabels[response.selectedAnswer]}
+              </p>
+              <p>
+                <strong>Correct answer:</strong> {optionLabels[response.correctAnswer]}
+              </p>
+              <p className="solution-text">
+                <strong>Explanation:</strong> {response.explanation}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default TestResultPage;
+
