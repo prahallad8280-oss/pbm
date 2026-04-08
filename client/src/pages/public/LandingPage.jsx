@@ -25,7 +25,7 @@ const normalizeText = (value = "") => value.toLowerCase().replace(/[^a-z0-9]+/g,
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalClosing, setAuthModalClosing] = useState(false);
   const [authMode, setAuthMode] = useState("login");
@@ -124,6 +124,20 @@ const LandingPage = () => {
     navigate("/dashboard");
   };
 
+  const handleAuthAction = () => {
+    if (user) {
+      logout();
+      if (authModalOpen) {
+        closeAuthModal();
+      }
+      navigate("/");
+      return;
+    }
+
+    setAuthMode("login");
+    setAuthModalOpen(true);
+  };
+
   return (
     <div className="home-page">
       <div className="home-topbar">CSIR NET mock tests for Lectureship and JRF preparation</div>
@@ -139,20 +153,9 @@ const LandingPage = () => {
           </Link>
 
           <nav className="site-nav">
-            {user ? (
-              <Link to={user.role === "admin" ? "/admin" : "/dashboard"}>Dashboard</Link>
-            ) : (
-              <button
-                type="button"
-                className="site-nav-button"
-                onClick={() => {
-                  setAuthMode("login");
-                  setAuthModalOpen(true);
-                }}
-              >
-                Login
-              </button>
-            )}
+            <button type="button" className="site-nav-button" onClick={handleAuthAction}>
+              {user ? "Logout" : "Login/Signup"}
+            </button>
             <a href="#about">About Me</a>
             <a href="#contact">Contact</a>
           </nav>
@@ -204,7 +207,7 @@ const LandingPage = () => {
                       className="button"
                       onClick={() => navigate(`/open-tests/${item.featuredKey}`)}
                     >
-                      Start free test
+                      Start now
                     </button>
                   ) : (
                     <button
@@ -323,18 +326,9 @@ const LandingPage = () => {
           </div>
 
           <div className="footer-links">
-            {!user ? (
-              <button
-                type="button"
-                className="site-nav-button footer-action-button"
-                onClick={() => {
-                  setAuthMode("login");
-                  setAuthModalOpen(true);
-                }}
-              >
-                Login
-              </button>
-            ) : null}
+            <button type="button" className="site-nav-button footer-action-button" onClick={handleAuthAction}>
+              {user ? "Logout" : "Login/Signup"}
+            </button>
             <a href="#about">About Me</a>
             <a href="#contact">Contact</a>
           </div>
