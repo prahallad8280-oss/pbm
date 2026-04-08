@@ -36,7 +36,7 @@ const TestAttemptPage = () => {
     startAttempt();
   }, [categoryId]);
 
-  const totalSeconds = (testData?.durationMinutes || 0) * 60;
+  const totalSeconds = Number(testData?.durationMinutes || 0) * 60;
 
   const handleSubmit = async (forceSubmit = false) => {
     if (!testData || submitRef.current) {
@@ -69,7 +69,7 @@ const TestAttemptPage = () => {
     }
   };
 
-  const { progress, secondsLeft } = useTimer(totalSeconds, () => handleSubmit(true));
+  const { isReady, progress, secondsLeft } = useTimer(totalSeconds, () => handleSubmit(true));
   const question = testData?.questions[currentIndex];
 
   const answeredCount = useMemo(
@@ -81,7 +81,15 @@ const TestAttemptPage = () => {
     return <div className="screen-state form-error">{error}</div>;
   }
 
-  if (!testData || !question) {
+  if (testData && totalSeconds <= 0) {
+    return (
+      <div className="screen-state form-error">
+        This test category has an invalid timer. Update the category duration in admin and try again.
+      </div>
+    );
+  }
+
+  if (!testData || !question || !isReady) {
     return <div className="screen-state">Preparing your mock test...</div>;
   }
 
@@ -169,4 +177,3 @@ const TestAttemptPage = () => {
 };
 
 export default TestAttemptPage;
-

@@ -1,22 +1,36 @@
 import { useEffect, useRef, useState } from "react";
 
+const normalizeSeconds = (value) => {
+  const seconds = Number(value);
+
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return 0;
+  }
+
+  return Math.floor(seconds);
+};
+
 const useTimer = (initialSeconds, onExpire) => {
-  const [secondsLeft, setSecondsLeft] = useState(initialSeconds);
+  const normalizedInitialSeconds = normalizeSeconds(initialSeconds);
+  const [secondsLeft, setSecondsLeft] = useState(() =>
+    normalizedInitialSeconds ? normalizedInitialSeconds : null,
+  );
   const expireRef = useRef(onExpire);
-  const syncedInitialRef = useRef(initialSeconds);
+  const syncedInitialRef = useRef(normalizedInitialSeconds);
 
   useEffect(() => {
     expireRef.current = onExpire;
   }, [onExpire]);
 
   useEffect(() => {
-    if (initialSeconds !== syncedInitialRef.current) {
-      syncedInitialRef.current = initialSeconds;
-      setSecondsLeft(initialSeconds);
-      return undefined;
+    if (normalizedInitialSeconds !== syncedInitialRef.current) {
+      syncedInitialRef.current = normalizedInitialSeconds;
+      setSecondsLeft(normalizedInitialSeconds ? normalizedInitialSeconds : null);
     }
+  }, [normalizedInitialSeconds]);
 
-    if (!initialSeconds) {
+  useEffect(() => {
+    if (secondsLeft === null) {
       return undefined;
     }
 
@@ -30,12 +44,15 @@ const useTimer = (initialSeconds, onExpire) => {
     }, 1000);
 
     return () => window.clearInterval(interval);
-  }, [initialSeconds, secondsLeft]);
+  }, [secondsLeft]);
+
+  const safeSecondsLeft = secondsLeft ?? normalizedInitialSeconds;
 
   return {
-    secondsLeft,
+    isReady: secondsLeft !== null,
+    secondsLeft: safeSecondsLeft,
     setSecondsLeft,
-    progress: initialSeconds ? (secondsLeft / initialSeconds) * 100 : 0,
+    progress: normalizedInitialSeconds ? (safeSecondsLeft / normalizedInitialSeconds) * 100 : 0,
   };
 };
 
