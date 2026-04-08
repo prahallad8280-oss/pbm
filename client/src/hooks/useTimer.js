@@ -3,16 +3,19 @@ import { useEffect, useRef, useState } from "react";
 const useTimer = (initialSeconds, onExpire) => {
   const [secondsLeft, setSecondsLeft] = useState(initialSeconds);
   const expireRef = useRef(onExpire);
+  const syncedInitialRef = useRef(initialSeconds);
 
   useEffect(() => {
     expireRef.current = onExpire;
   }, [onExpire]);
 
   useEffect(() => {
-    setSecondsLeft(initialSeconds);
-  }, [initialSeconds]);
+    if (initialSeconds !== syncedInitialRef.current) {
+      syncedInitialRef.current = initialSeconds;
+      setSecondsLeft(initialSeconds);
+      return undefined;
+    }
 
-  useEffect(() => {
     if (!initialSeconds) {
       return undefined;
     }
@@ -37,4 +40,3 @@ const useTimer = (initialSeconds, onExpire) => {
 };
 
 export default useTimer;
-
