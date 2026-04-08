@@ -2,6 +2,7 @@ import Question from "../models/Question.js";
 import TestAttempt from "../models/TestAttempt.js";
 import TestCategory from "../models/TestCategory.js";
 import User from "../models/User.js";
+import Feedback from "../models/Feedback.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 const toSlug = (value = "") =>
@@ -28,11 +29,12 @@ const validateQuestionPayload = ({ questionText, category, testType, options, co
 };
 
 export const getAdminOverview = asyncHandler(async (_req, res) => {
-  const [userCount, categoryCount, questionCount, attemptCount, recentAttempts] = await Promise.all([
+  const [userCount, categoryCount, questionCount, attemptCount, feedbackCount, recentAttempts] = await Promise.all([
     User.countDocuments({ role: "user" }),
     TestCategory.countDocuments(),
     Question.countDocuments(),
     TestAttempt.countDocuments({ status: "completed" }),
+    Feedback.countDocuments(),
     TestAttempt.find({ status: "completed" })
       .populate("user", "name email")
       .populate("category", "name testType")
@@ -46,6 +48,7 @@ export const getAdminOverview = asyncHandler(async (_req, res) => {
       categoryCount,
       questionCount,
       attemptCount,
+      feedbackCount,
     },
     recentAttempts: recentAttempts.map((attempt) => ({
       id: attempt._id,
@@ -68,6 +71,32 @@ export const getAdminOverview = asyncHandler(async (_req, res) => {
         : null,
     })),
   });
+});
+
+export const getAdminFeedback = asyncHandler(async (_req, res) => {
+  const feedback = await Feedback.find().sort({ createdAt: -1 }).lean();
+  res.json(feedback);
+});
+
+export const updateFeedbackStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+
+  if (!["new", "reviewed"].includes(status)) {
+    res.status(400);
+    throw new Error("Feedback status must be either new or reviewed.");
+  }
+
+  const feedback = await Feedback.findById(req.params.feedbackId);
+
+  if (!feedback) {
+    res.status(404);
+    throw new Error("Feedback item not found.");
+  }
+
+  feedback.status = status;
+  await feedback.save();
+
+  res.json(feedback);
 });
 
 export const getAdminQuestions = asyncHandler(async (req, res) => {
@@ -257,4 +286,3 @@ export const deleteCategory = asyncHandler(async (req, res) => {
   await category.deleteOne();
   res.json({ message: "Category deleted successfully." });
 });
-

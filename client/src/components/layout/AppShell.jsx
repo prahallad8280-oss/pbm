@@ -11,6 +11,7 @@ const AppShell = () => {
           { to: "/admin", label: "Overview" },
           { to: "/admin/questions", label: "Questions" },
           { to: "/admin/categories", label: "Categories" },
+          { to: "/admin/feedback", label: "Feedback" },
         ]
       : [
           { to: "/dashboard", label: "Dashboard" },
@@ -65,4 +66,3 @@ const AppShell = () => {
 };
 
 export default AppShell;
-

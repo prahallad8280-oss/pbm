@@ -390,8 +390,8 @@ const LandingPage = () => {
               <h2>Tell us what should improve next on the platform.</h2>
               <p>
                 If you notice anything confusing, want a new mock-test feature, or have suggestions about the
-                interface, send your feedback here. The message will be submitted directly from the website and sent
-                to the platform inbox.
+                interface, send your feedback here. The message will be submitted directly from the website and stored
+                in the admin feedback inbox.
               </p>
               <ul className="info-list">
                 <li>Report login or test-access issues.</li>

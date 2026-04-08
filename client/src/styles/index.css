@@ -397,6 +397,23 @@ select {
   resize: vertical;
 }
 
+.feedback-meta {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+}
+
+.feedback-meta p,
+.feedback-message {
+  margin: 0;
+}
+
+.feedback-message {
+  color: #465873;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
 .form-success {
   color: var(--success);
   font-weight: 600;

@@ -1,5 +1,5 @@
 import asyncHandler from "../utils/asyncHandler.js";
-import { sendFeedbackEmail } from "../services/emailService.js";
+import Feedback from "../models/Feedback.js";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -25,7 +25,7 @@ export const submitFeedback = asyncHandler(async (req, res) => {
     throw new Error("Please write a little more detail in your feedback.");
   }
 
-  await sendFeedbackEmail({
+  await Feedback.create({
     name,
     email,
     message,
@@ -34,7 +34,6 @@ export const submitFeedback = asyncHandler(async (req, res) => {
   });
 
   res.status(201).json({
-    message: "Feedback sent successfully.",
+    message: "Feedback submitted successfully.",
   });
 });
-

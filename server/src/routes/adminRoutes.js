@@ -6,8 +6,10 @@ import {
   deleteCategory,
   deleteQuestion,
   getAdminCategories,
+  getAdminFeedback,
   getAdminOverview,
   getAdminQuestions,
+  updateFeedbackStatus,
   updateCategory,
   updateQuestion,
 } from "../controllers/adminController.js";
@@ -18,6 +20,8 @@ const router = express.Router();
 router.use(protect, authorize("admin"));
 
 router.get("/overview", getAdminOverview);
+router.get("/feedback", getAdminFeedback);
+router.patch("/feedback/:feedbackId", updateFeedbackStatus);
 
 router
   .route("/questions")

@@ -4,6 +4,7 @@ import AppShell from "./components/layout/AppShell.jsx";
 import ProtectedRoute from "./components/layout/ProtectedRoute.jsx";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage.jsx";
 import CategoryManagerPage from "./pages/admin/CategoryManagerPage.jsx";
+import FeedbackManagerPage from "./pages/admin/FeedbackManagerPage.jsx";
 import QuestionManagerPage from "./pages/admin/QuestionManagerPage.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
@@ -37,6 +38,7 @@ const App = () => (
         <Route path="/admin" element={<AdminDashboardPage />} />
         <Route path="/admin/questions" element={<QuestionManagerPage />} />
         <Route path="/admin/categories" element={<CategoryManagerPage />} />
+        <Route path="/admin/feedback" element={<FeedbackManagerPage />} />
       </Route>
     </Route>
 
