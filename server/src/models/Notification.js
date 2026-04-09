@@ -20,6 +20,12 @@ const notificationSchema = new mongoose.Schema(
       trim: true,
       maxlength: 500,
     },
+    link: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 500,
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -33,4 +39,3 @@ const notificationSchema = new mongoose.Schema(
 const Notification = mongoose.model("Notification", notificationSchema);
 
 export default Notification;
-

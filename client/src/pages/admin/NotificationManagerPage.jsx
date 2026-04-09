@@ -6,6 +6,7 @@ const emptyNotification = {
   label: "",
   title: "",
   body: "",
+  link: "",
   isActive: true,
 };
 
@@ -105,6 +106,16 @@ const NotificationManagerPage = () => {
           />
         </label>
 
+        <label className="field">
+          <span>Link</span>
+          <input
+            type="url"
+            value={form.link}
+            onChange={(event) => setForm((current) => ({ ...current, link: event.target.value }))}
+            placeholder="Optional link like /open-tests/example or https://..."
+          />
+        </label>
+
         <label className="checkbox-row">
           <input
             type="checkbox"
@@ -154,6 +165,7 @@ const NotificationManagerPage = () => {
                 </div>
 
                 <p>{item.body}</p>
+                {item.link ? <p className="muted-text">Link: {item.link}</p> : null}
                 <p className="muted-text">{item.isActive ? "Visible on home page" : "Hidden from home page"}</p>
               </article>
             ))}
@@ -167,4 +179,3 @@ const NotificationManagerPage = () => {
 };
 
 export default NotificationManagerPage;
-

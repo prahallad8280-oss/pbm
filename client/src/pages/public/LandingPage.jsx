@@ -50,6 +50,7 @@ const featuredMathFlts = [
 ];
 
 const normalizeText = (value = "") => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const isExternalLink = (value = "") => /^https?:\/\//i.test(value);
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -210,6 +211,21 @@ const LandingPage = () => {
     setAuthModalOpen(true);
   };
 
+  const handleNotificationClick = (link) => {
+    const target = String(link || "").trim();
+
+    if (!target) {
+      return;
+    }
+
+    if (isExternalLink(target)) {
+      window.open(target, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    navigate(target);
+  };
+
   const handleFeedbackChange = (event) => {
     const { name, value } = event.target;
     if (feedbackError) {
@@ -314,10 +330,27 @@ const LandingPage = () => {
               {notifications.length ? (
                 <div className="notice-notes-grid">
                   {notifications.map((item, index) => (
-                    <article key={item._id} className={`notice-note note-tilt-${(index % 4) + 1}`}>
+                    <article
+                      key={item._id}
+                      className={`notice-note note-tilt-${(index % 4) + 1} ${item.link ? "is-clickable" : ""}`}
+                      onClick={item.link ? () => handleNotificationClick(item.link) : undefined}
+                      role={item.link ? "button" : undefined}
+                      tabIndex={item.link ? 0 : undefined}
+                      onKeyDown={
+                        item.link
+                          ? (event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                handleNotificationClick(item.link);
+                              }
+                            }
+                          : undefined
+                      }
+                    >
                       <p className="notice-status">{item.label}</p>
                       <h3>{item.title}</h3>
                       <p>{item.body}</p>
+                      {item.link ? <span className="notice-link-text">Open link</span> : null}
                     </article>
                   ))}
                 </div>

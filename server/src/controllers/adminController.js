@@ -86,6 +86,7 @@ export const createNotification = asyncHandler(async (req, res) => {
   const label = String(req.body.label || "").trim();
   const title = String(req.body.title || "").trim();
   const body = String(req.body.body || "").trim();
+  const link = String(req.body.link || "").trim();
 
   if (!label || !title || !body) {
     res.status(400);
@@ -96,6 +97,7 @@ export const createNotification = asyncHandler(async (req, res) => {
     label,
     title,
     body,
+    link,
     isActive: req.body.isActive ?? true,
   });
 

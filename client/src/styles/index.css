@@ -238,6 +238,19 @@ select {
   justify-content: flex-start;
 }
 
+.notice-note.is-clickable {
+  cursor: pointer;
+}
+
+.notice-note.is-clickable:hover {
+  transform: translateY(-2px) rotate(0deg);
+}
+
+.notice-note.is-clickable:focus-visible {
+  outline: 2px solid rgba(11, 106, 130, 0.35);
+  outline-offset: 3px;
+}
+
 .notice-status {
   margin: 0 0 0.55rem;
   color: #9d151a;
@@ -262,6 +275,13 @@ select {
 .notice-empty {
   margin: 0;
   color: #607189;
+}
+
+.notice-link-text {
+  margin-top: auto;
+  color: #0b6a82;
+  font-weight: 700;
+  font-size: 0.92rem;
 }
 
 .note-tilt-1 {
