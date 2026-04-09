@@ -16,27 +16,27 @@ const examTracks = [
   {
     title: "CSIR NET",
     description: "Subject-wise tests, full length practice, and result review for mathematics-focused competitive prep.",
-    cta: "Explore CSIR practice",
+    href: "/dashboard",
   },
   {
     title: "GATE Mathematics",
     description: "Timed problem-solving sets and structured revision for graduate-level entrance preparation.",
-    cta: "Explore GATE sets",
+    href: "/dashboard",
   },
   {
     title: "Odisha Assistant Professor",
     description: "State-level preparation support with exam-oriented practice and focused mathematics coverage.",
-    cta: "Explore state exams",
+    href: "/dashboard",
   },
   {
     title: "NBHM PYQs",
     description: "Past-year style preparation to strengthen reasoning, proofs, and higher mathematics problem solving.",
-    cta: "View NBHM PYQs",
+    href: "/dashboard",
   },
   {
     title: "TIFR PYQs",
     description: "Institute-level past paper preparation with deeper problem practice and review-friendly analysis.",
-    cta: "View TIFR PYQs",
+    href: "/dashboard",
   },
 ];
 
@@ -187,6 +187,16 @@ const LandingPage = () => {
     navigate("/dashboard");
   };
 
+  const handleExamTrackAccess = (href) => {
+    if (!user) {
+      setAuthMode("login");
+      setAuthModalOpen(true);
+      return;
+    }
+
+    navigate(href || "/dashboard");
+  };
+
   const handleExploreMore = () => {
     if (!user) {
       setAuthMode("login");
@@ -321,65 +331,61 @@ const LandingPage = () => {
 
         <section className="notice-board-section">
           <div className="home-shell">
-            <div className="notice-strip">
-              <div className="notice-strip-copy">
+            <div className="notification-layout">
+              <div className="notification-copy">
                 <p className="section-tag">Notifications</p>
-                <h2>Fresh updates, new papers, and mock-test announcements.</h2>
-              </div>
+                <h2>Track live mocks, new PYQs, and important exam updates without missing anything.</h2>
+                <p>
+                  This section is meant to surface what is currently active on the platform, what new material has been
+                  added, and which exam tracks are expanding next.
+                </p>
+                <p>
+                  Admins can update these notices from the dashboard, so the home page always reflects the latest
+                  additions instead of showing fixed placeholder content.
+                </p>
 
-              {notifications.length ? (
-                <div className="notice-notes-grid">
-                  {notifications.map((item, index) => (
-                    <article
-                      key={item._id}
-                      className={`notice-note note-tilt-${(index % 4) + 1} ${item.link ? "is-clickable" : ""}`}
-                      onClick={item.link ? () => handleNotificationClick(item.link) : undefined}
-                      role={item.link ? "button" : undefined}
-                      tabIndex={item.link ? 0 : undefined}
-                      onKeyDown={
-                        item.link
-                          ? (event) => {
-                              if (event.key === "Enter" || event.key === " ") {
-                                event.preventDefault();
-                                handleNotificationClick(item.link);
-                              }
-                            }
-                          : undefined
-                      }
-                    >
-                      <p className="notice-status">{item.label}</p>
-                      <h3>{item.title}</h3>
-                      <p>{item.body}</p>
-                      {item.link ? <span className="notice-link-text">Open link</span> : null}
-                    </article>
+                <div className="track-inline-list">
+                  <p className="section-tag">Exam tracks</p>
+                  {examTracks.map((track) => (
+                    <div key={track.title} className="track-inline-item">
+                      <div>
+                        <h3>{track.title}</h3>
+                        <p>{track.description}</p>
+                      </div>
+                      <button type="button" className="track-inline-link" onClick={() => handleExamTrackAccess(track.href)}>
+                        click here
+                      </button>
+                    </div>
                   ))}
                 </div>
-              ) : (
-                <p className="notice-empty">Admin notifications will appear here as soon as they are published.</p>
-              )}
-            </div>
-          </div>
-        </section>
-
-        <section className="exam-tracks-section">
-          <div className="home-shell">
-            <div className="section-heading">
-              <div>
-                <p className="section-tag">Exam tracks</p>
-                <h2>Use one preparation space for multiple mathematics exams and institutions.</h2>
               </div>
-            </div>
 
-            <div className="exam-tracks-grid">
-              {examTracks.map((track) => (
-                <article key={track.title} className="exam-track-card">
-                  <h3>{track.title}</h3>
-                  <p>{track.description}</p>
-                  <button type="button" className="button button-secondary" onClick={handleExploreMore}>
-                    {user ? track.cta : "Login to explore"}
-                  </button>
-                </article>
-              ))}
+              <aside className="notification-panel">
+                <h3>Latest notices</h3>
+
+                {notifications.length ? (
+                  <ul className="notification-list">
+                    {notifications.map((item) => (
+                      <li key={item._id} className="notification-list-item">
+                        <p className="notification-label">{item.label}</p>
+                        <p className="notification-title">{item.title}</p>
+                        <p className="notification-body">{item.body}</p>
+                        {item.link ? (
+                          <button
+                            type="button"
+                            className="notification-link"
+                            onClick={() => handleNotificationClick(item.link)}
+                          >
+                            Open update
+                          </button>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="notification-empty">Admin notifications will appear here as soon as they are published.</p>
+                )}
+              </aside>
             </div>
           </div>
         </section>
