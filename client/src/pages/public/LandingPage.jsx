@@ -188,13 +188,18 @@ const LandingPage = () => {
   };
 
   const handleExamTrackAccess = (href) => {
-    if (!user) {
-      setAuthMode("login");
-      setAuthModalOpen(true);
+    const target = String(href || "").trim();
+
+    if (!target) {
       return;
     }
 
-    navigate(href || "/dashboard");
+    if (isExternalLink(target)) {
+      window.open(target, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    navigate(target);
   };
 
   const handleExploreMore = () => {
@@ -333,17 +338,6 @@ const LandingPage = () => {
           <div className="home-shell">
             <div className="notification-layout">
               <div className="notification-copy">
-                <p className="section-tag">Notifications</p>
-                <h2>Track live mocks, new PYQs, and important exam updates without missing anything.</h2>
-                <p>
-                  This section is meant to surface what is currently active on the platform, what new material has been
-                  added, and which exam tracks are expanding next.
-                </p>
-                <p>
-                  Admins can update these notices from the dashboard, so the home page always reflects the latest
-                  additions instead of showing fixed placeholder content.
-                </p>
-
                 <div className="track-inline-list">
                   <p className="section-tag">Exam tracks</p>
                   {examTracks.map((track) => (
