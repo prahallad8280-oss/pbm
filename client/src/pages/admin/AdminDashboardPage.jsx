@@ -1,6 +1,47 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import api from "../../api/client.js";
+
+const summaryLinks = [
+  {
+    label: "Students",
+    statKey: "userCount",
+    description: "Registered learners.",
+    to: "/admin/users",
+  },
+  {
+    label: "Tests",
+    statKey: "categoryCount",
+    description: "Subject-wise and full-length sets.",
+    to: "/admin/tests#available-tests-section",
+  },
+  {
+    label: "Questions",
+    statKey: "questionCount",
+    description: "Total question bank size.",
+    to: "/admin/tests#question-bank-section",
+  },
+  {
+    label: "Completed tests",
+    statKey: "attemptCount",
+    description: "Submitted attempts across users.",
+    to: "#recent-activity-section",
+    isLocal: true,
+  },
+  {
+    label: "Notifications",
+    statKey: "notificationCount",
+    description: "Visible home-page notices.",
+    to: "/admin/notifications",
+  },
+  {
+    label: "Feedback",
+    statKey: "feedbackCount",
+    description: "Messages waiting in the inbox.",
+    to: "/admin/feedback",
+  },
+];
 
 const AdminDashboardPage = () => {
   const [overview, setOverview] = useState(null);
@@ -39,42 +80,27 @@ const AdminDashboardPage = () => {
 
       {overview ? (
         <section className="metric-strip">
-          <article className="metric-item">
-            <span>Students</span>
-            <strong>{overview.stats.userCount}</strong>
-            <p>Registered learners.</p>
-          </article>
-          <article className="metric-item">
-            <span>Tests</span>
-            <strong>{overview.stats.categoryCount}</strong>
-            <p>Subject-wise and full-length sets.</p>
-          </article>
-          <article className="metric-item">
-            <span>Questions</span>
-            <strong>{overview.stats.questionCount}</strong>
-            <p>Total question bank size.</p>
-          </article>
-          <article className="metric-item">
-            <span>Completed tests</span>
-            <strong>{overview.stats.attemptCount}</strong>
-            <p>Submitted attempts across users.</p>
-          </article>
-          <article className="metric-item">
-            <span>Notifications</span>
-            <strong>{overview.stats.notificationCount}</strong>
-            <p>Visible home-page notices.</p>
-          </article>
-          <article className="metric-item">
-            <span>Feedback</span>
-            <strong>{overview.stats.feedbackCount}</strong>
-            <p>Messages waiting in the inbox.</p>
-          </article>
+          {summaryLinks.map((item) =>
+            item.isLocal ? (
+              <a key={item.label} className="metric-item metric-link-item" href={item.to}>
+                <span>{item.label}</span>
+                <strong>{overview.stats[item.statKey]}</strong>
+                <p>{item.description}</p>
+              </a>
+            ) : (
+              <Link key={item.label} className="metric-item metric-link-item" to={item.to}>
+                <span>{item.label}</span>
+                <strong>{overview.stats[item.statKey]}</strong>
+                <p>{item.description}</p>
+              </Link>
+            ),
+          )}
         </section>
       ) : null}
 
       {error ? <p className="form-error">{error}</p> : null}
 
-      <section className="workspace-section">
+      <section id="recent-activity-section" className="workspace-section">
         <div className="section-headline">
           <div>
             <p className="section-tag">Recent activity</p>

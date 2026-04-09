@@ -1832,6 +1832,32 @@ select {
   border-bottom: 1px solid rgba(18, 38, 63, 0.08);
 }
 
+.workspace-switcher {
+  display: flex;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  padding-bottom: 1.35rem;
+  border-bottom: 1px solid rgba(18, 38, 63, 0.08);
+}
+
+.workspace-switch-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 168px;
+  padding: 0.78rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(18, 38, 63, 0.08);
+  background: rgba(255, 255, 255, 0.62);
+  color: #21344d;
+  font-weight: 700;
+}
+
+.workspace-switch-link:hover {
+  color: #9d151a;
+  border-color: rgba(157, 21, 26, 0.2);
+}
+
 .workspace-intro h2,
 .metric-item strong,
 .test-line-item h4,
@@ -1860,6 +1886,18 @@ select {
 .metric-item {
   display: grid;
   gap: 0.35rem;
+}
+
+.metric-link-item {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid transparent;
+  transition: color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.metric-link-item:hover {
+  color: #9d151a;
+  border-color: rgba(157, 21, 26, 0.2);
+  transform: translateY(-1px);
 }
 
 .metric-item span {
@@ -1929,6 +1967,11 @@ select {
   font-weight: 700;
 }
 
+.question-directory {
+  display: grid;
+  gap: 0.8rem;
+}
+
 .activity-line-time {
   color: #6d7d93;
   white-space: nowrap;
@@ -1985,6 +2028,7 @@ select {
 .plain-form {
   display: grid;
   gap: 1rem;
+  max-width: 860px;
 }
 
 .inline-choice-row,

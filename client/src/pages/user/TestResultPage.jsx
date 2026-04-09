@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 
 import api from "../../api/client.js";
-import StatCard from "../../components/common/StatCard.jsx";
 
 const optionLabels = ["A", "B", "C", "D"];
 
@@ -48,22 +47,35 @@ const TestResultPage = () => {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="section-tag">Result summary</p>
-          <h2>{result.category?.name}</h2>
-          <p>
-            Submitted on {new Date(result.submittedAt).toLocaleString()} after {formatDuration(result.timeTakenSeconds)}.
-          </p>
-        </div>
-        <div className="stats-grid">
-          <StatCard label="Score" value={`${result.score}/${result.totalQuestions}`} hint="1 mark per correct answer" />
-          <StatCard label="Accuracy" value={`${result.accuracy}%`} hint="Correct answers percentage" />
-          <StatCard label="Incorrect" value={result.incorrectCount} hint="Questions answered incorrectly or skipped" />
-        </div>
+      <section className="workspace-intro">
+        <p className="section-tag">Result summary</p>
+        <h2>{result.category?.name}</h2>
+        <p className="workspace-lead">
+          Submitted on {new Date(result.submittedAt).toLocaleString()} after {formatDuration(result.timeTakenSeconds)}.
+        </p>
       </section>
 
-      <section className="content-section">
+      <section className="metric-strip">
+        <article className="metric-item">
+          <span>Score</span>
+          <strong>
+            {result.score}/{result.totalQuestions}
+          </strong>
+          <p>1 mark per correct answer.</p>
+        </article>
+        <article className="metric-item">
+          <span>Accuracy</span>
+          <strong>{result.accuracy}%</strong>
+          <p>Correct answers percentage.</p>
+        </article>
+        <article className="metric-item">
+          <span>Incorrect</span>
+          <strong>{result.incorrectCount}</strong>
+          <p>Questions answered incorrectly or skipped.</p>
+        </article>
+      </section>
+
+      <section className="workspace-section">
         <div className="section-headline">
           <div>
             <p className="section-tag">Detailed solutions</p>
@@ -73,7 +85,10 @@ const TestResultPage = () => {
 
         <div className="results-list">
           {result.responses.map((response, index) => (
-            <article key={`${response.questionId}-${index}`} className={`review-card ${response.isCorrect ? "correct" : "incorrect"}`}>
+            <article
+              key={`${response.questionId}-${index}`}
+              className={`review-card ${response.isCorrect ? "correct" : "incorrect"}`}
+            >
               <div className="review-header">
                 <p className="section-tag">Question {index + 1}</p>
                 <span className={`pill ${response.isCorrect ? "" : "pill-danger"}`}>
@@ -85,7 +100,11 @@ const TestResultPage = () => {
 
               {response.questionImage ? (
                 <div className="review-question-image-wrap">
-                  <img src={response.questionImage} alt={`Question ${index + 1} figure`} className="review-question-image" />
+                  <img
+                    src={response.questionImage}
+                    alt={`Question ${index + 1} figure`}
+                    className="review-question-image"
+                  />
                 </div>
               ) : null}
 

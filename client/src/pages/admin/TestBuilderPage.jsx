@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 import api from "../../api/client.js";
 import QuestionForm from "../../components/admin/QuestionForm.jsx";
@@ -31,6 +32,7 @@ const buildTestForm = (test) =>
     : { ...emptyTest };
 
 const TestBuilderPage = () => {
+  const location = useLocation();
   const [tests, setTests] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [activeTestId, setActiveTestId] = useState(null);
@@ -108,6 +110,21 @@ const TestBuilderPage = () => {
     initialize();
   }, []);
 
+  useEffect(() => {
+    if (!location.hash) {
+      return;
+    }
+
+    const targetId = location.hash.replace("#", "");
+    const target = document.getElementById(targetId);
+
+    if (target) {
+      window.requestAnimationFrame(() => {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }, [location.hash, tests.length, questions.length]);
+
   const handleSelectTest = async (test) => {
     setTestError("");
     setQuestionError("");
@@ -115,6 +132,7 @@ const TestBuilderPage = () => {
     setTestForm(buildTestForm(test));
     setEditingQuestion(null);
     await loadQuestions(test._id);
+    document.getElementById("create-test-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleCreateNew = () => {
@@ -221,296 +239,312 @@ const TestBuilderPage = () => {
         </p>
       </section>
 
+      <nav className="workspace-switcher" aria-label="Test builder sections">
+        <a className="workspace-switch-link" href="#create-test-section">
+          Create a test
+        </a>
+        <a className="workspace-switch-link" href="#available-tests-section">
+          Available tests
+        </a>
+      </nav>
+
       {testError ? <p className="form-error">{testError}</p> : null}
 
-      <div className="test-builder-layout">
-        <aside className="directory-panel">
-          <div className="directory-panel-header">
-            <div>
-              <p className="section-tag">Saved tests</p>
-              <h3>Pick one to edit</h3>
-            </div>
+      <section id="create-test-section" className="workspace-section">
+        <div className="section-headline">
+          <div>
+            <p className="section-tag">Create a test</p>
+            <h3>{testForm._id ? "Edit this test" : "Create a new test"}</h3>
+          </div>
+
+          <div className="action-row">
+            {testForm._id ? (
+              <button type="button" className="button button-danger" onClick={handleDeleteTest}>
+                Delete test
+              </button>
+            ) : null}
 
             <button type="button" className="button button-secondary" onClick={handleCreateNew}>
               New test
             </button>
           </div>
-
-          {tests.length ? (
-            <div className="directory-panel-list">
-              {tests.map((test) => (
-                <button
-                  key={test._id}
-                  type="button"
-                  className={`directory-row ${test._id === activeTestId ? "active" : ""}`}
-                  onClick={() => handleSelectTest(test)}
-                >
-                  <div>
-                    <p className="directory-row-title">{test.name}</p>
-                    <p className="directory-row-copy">
-                      {test.examName || "Exam"} | {test.testType === "flt" ? "Full length" : "Subject-wise"}
-                    </p>
-                  </div>
-                  <span className={`pill ${test.testType === "flt" ? "pill-alt" : ""}`}>
-                    {test.questionBankSize}/{test.questionCount}
-                  </span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="empty-state">No tests yet. Start with the metadata form on the right.</p>
-          )}
-        </aside>
-
-        <div className="editor-stack">
-          <section className="workspace-section">
-            <div className="section-headline">
-              <div>
-                <p className="section-tag">Test metadata</p>
-                <h3>{testForm._id ? "Edit this test" : "Create a new test"}</h3>
-              </div>
-
-              {testForm._id ? (
-                <button type="button" className="button button-danger" onClick={handleDeleteTest}>
-                  Delete test
-                </button>
-              ) : null}
-            </div>
-
-            <form className="plain-form" onSubmit={handleSubmitTest}>
-              <label className="field">
-                <span>Name</span>
-                <input
-                  type="text"
-                  value={testForm.name}
-                  onChange={(event) => setTestForm((current) => ({ ...current, name: event.target.value }))}
-                  required
-                />
-              </label>
-
-              <div className="field-grid">
-                <label className="field">
-                  <span>Exam name</span>
-                  <input
-                    type="text"
-                    value={testForm.examName}
-                    onChange={(event) => setTestForm((current) => ({ ...current, examName: event.target.value }))}
-                    placeholder="CSIR, GATE, OPSC, NBHM"
-                  />
-                </label>
-
-                <label className="field">
-                  <span>Subject label</span>
-                  <input
-                    type="text"
-                    value={testForm.subjectLabel}
-                    onChange={(event) =>
-                      setTestForm((current) => ({ ...current, subjectLabel: event.target.value }))
-                    }
-                    placeholder="MATHEMATIC SCIENCE SET A"
-                  />
-                </label>
-              </div>
-
-              <div className="field-grid">
-                <label className="field">
-                  <span>Slug</span>
-                  <input
-                    type="text"
-                    value={testForm.slug}
-                    onChange={(event) => setTestForm((current) => ({ ...current, slug: event.target.value }))}
-                    placeholder="Optional custom slug"
-                  />
-                </label>
-
-                <label className="field">
-                  <span>Test type</span>
-                  <select
-                    value={testForm.testType}
-                    onChange={(event) => setTestForm((current) => ({ ...current, testType: event.target.value }))}
-                  >
-                    <option value="subject">Subject-wise</option>
-                    <option value="flt">Full length</option>
-                  </select>
-                </label>
-              </div>
-
-              <label className="field">
-                <span>Description</span>
-                <textarea
-                  rows="4"
-                  value={testForm.description}
-                  onChange={(event) => setTestForm((current) => ({ ...current, description: event.target.value }))}
-                />
-              </label>
-
-              <div className="field-grid">
-                <label className="field">
-                  <span>Duration (mins)</span>
-                  <input
-                    type="number"
-                    min="1"
-                    value={testForm.durationMinutes}
-                    onChange={(event) =>
-                      setTestForm((current) => ({ ...current, durationMinutes: Number(event.target.value) }))
-                    }
-                  />
-                </label>
-
-                <label className="field">
-                  <span>Planned question count</span>
-                  <input
-                    type="number"
-                    min="1"
-                    value={testForm.questionCount}
-                    onChange={(event) =>
-                      setTestForm((current) => ({ ...current, questionCount: Number(event.target.value) }))
-                    }
-                  />
-                </label>
-              </div>
-
-              <div className="inline-choice-row">
-                <label className="checkbox-row">
-                  <input
-                    type="checkbox"
-                    checked={testForm.isActive}
-                    onChange={(event) =>
-                      setTestForm((current) => ({ ...current, isActive: event.target.checked }))
-                    }
-                  />
-                  <span>Test is active</span>
-                </label>
-
-                <label className="checkbox-row">
-                  <input
-                    type="checkbox"
-                    checked={testForm.isDemo}
-                    onChange={(event) =>
-                      setTestForm((current) => ({
-                        ...current,
-                        isDemo: event.target.checked,
-                        demoKey: event.target.checked ? current.demoKey || current.slug || "" : "",
-                      }))
-                    }
-                  />
-                  <span>Open this as a public demo test</span>
-                </label>
-              </div>
-
-              {testForm.isDemo ? (
-                <label className="field">
-                  <span>Demo key</span>
-                  <input
-                    type="text"
-                    value={testForm.demoKey}
-                    onChange={(event) => setTestForm((current) => ({ ...current, demoKey: event.target.value }))}
-                    placeholder="example: mathematics-ma-2023-june"
-                  />
-                </label>
-              ) : null}
-
-              <div className="editor-actions">
-                <button type="submit" className="button" disabled={savingTest}>
-                  {savingTest ? "Saving..." : testForm._id ? "Update test" : "Create test"}
-                </button>
-              </div>
-            </form>
-          </section>
-
-          <section className="workspace-section">
-            <div className="section-headline">
-              <div>
-                <p className="section-tag">Questions inside this test</p>
-                <h3>{activeTest ? activeTest.name : "Save a test first"}</h3>
-              </div>
-
-              {activeTest ? (
-                <p className="workspace-meta">
-                  {activeTest.questionBankSize} in bank | target {activeTest.questionCount} |{" "}
-                  {activeTest.testType === "flt" ? "Full length" : "Subject-wise"}
-                </p>
-              ) : null}
-            </div>
-
-            {questionError ? <p className="form-error">{questionError}</p> : null}
-
-            {activeTest ? (
-              <div className="builder-question-layout">
-                <QuestionForm
-                  categories={tests}
-                  defaultCategoryId={activeTest._id}
-                  defaultTestType={activeTest.testType}
-                  hideCategoryField
-                  fixedCategoryName={activeTest.name}
-                  fixedCategoryMeta={`${activeTest.examName || "Exam"} | ${
-                    activeTest.testType === "flt" ? "Full length" : "Subject-wise"
-                  }`}
-                  eyebrow="Question bank"
-                  title={editingQuestion ? "Edit question" : "Add a question"}
-                  initialValues={editingQuestion}
-                  onSubmit={handleSubmitQuestion}
-                  onCancel={() => setEditingQuestion(null)}
-                  submitting={savingQuestion}
-                />
-
-                <div className="question-directory">
-                  <div className="question-directory-header">
-                    <p className="section-tag">Existing questions</p>
-                    <span className="muted-text">
-                      {questionLoading ? "Refreshing..." : `${questions.length} loaded`}
-                    </span>
-                  </div>
-
-                  {questionLoading ? (
-                    <p className="empty-state">Loading questions...</p>
-                  ) : questions.length ? (
-                    <div className="question-line-list">
-                      {questions.map((question, index) => (
-                        <article key={question._id} className="question-line-item">
-                          <div>
-                            <p className="question-line-title">
-                              Q{index + 1}. {question.questionText}
-                            </p>
-                            <p className="question-line-copy">
-                              Correct answer: {optionLabels[question.correctAnswer]}{" "}
-                              {question.questionImage ? "| Includes figure" : ""}
-                            </p>
-                          </div>
-
-                          <div className="action-row">
-                            <button
-                              type="button"
-                              className="button button-ghost"
-                              onClick={() => setEditingQuestion(question)}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              type="button"
-                              className="button button-danger"
-                              onClick={() => handleDeleteQuestion(question._id)}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </article>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="empty-state">No questions yet. Add the first question from the form on the left.</p>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <p className="empty-state">
-                Create and save the test metadata first. After that, the full question bank will open inside this same
-                page.
-              </p>
-            )}
-          </section>
         </div>
-      </div>
+
+        {testForm._id ? (
+          <p className="workspace-meta">
+            You are editing: {testForm.name} | {testForm.examName || "Exam"} |{" "}
+            {testForm.testType === "flt" ? "Full length" : "Subject-wise"}
+          </p>
+        ) : (
+          <p className="workspace-meta">
+            Start with the test metadata. After saving it, the question bank section will open just below.
+          </p>
+        )}
+
+        <form className="plain-form" onSubmit={handleSubmitTest}>
+          <label className="field">
+            <span>Name</span>
+            <input
+              type="text"
+              value={testForm.name}
+              onChange={(event) => setTestForm((current) => ({ ...current, name: event.target.value }))}
+              required
+            />
+          </label>
+
+          <div className="field-grid">
+            <label className="field">
+              <span>Exam name</span>
+              <input
+                type="text"
+                value={testForm.examName}
+                onChange={(event) => setTestForm((current) => ({ ...current, examName: event.target.value }))}
+                placeholder="CSIR, GATE, OPSC, NBHM"
+              />
+            </label>
+
+            <label className="field">
+              <span>Subject label</span>
+              <input
+                type="text"
+                value={testForm.subjectLabel}
+                onChange={(event) => setTestForm((current) => ({ ...current, subjectLabel: event.target.value }))}
+                placeholder="MATHEMATIC SCIENCE SET A"
+              />
+            </label>
+          </div>
+
+          <div className="field-grid">
+            <label className="field">
+              <span>Slug</span>
+              <input
+                type="text"
+                value={testForm.slug}
+                onChange={(event) => setTestForm((current) => ({ ...current, slug: event.target.value }))}
+                placeholder="Optional custom slug"
+              />
+            </label>
+
+            <label className="field">
+              <span>Test type</span>
+              <select
+                value={testForm.testType}
+                onChange={(event) => setTestForm((current) => ({ ...current, testType: event.target.value }))}
+              >
+                <option value="subject">Subject-wise</option>
+                <option value="flt">Full length</option>
+              </select>
+            </label>
+          </div>
+
+          <label className="field">
+            <span>Description</span>
+            <textarea
+              rows="4"
+              value={testForm.description}
+              onChange={(event) => setTestForm((current) => ({ ...current, description: event.target.value }))}
+            />
+          </label>
+
+          <div className="field-grid">
+            <label className="field">
+              <span>Duration (mins)</span>
+              <input
+                type="number"
+                min="1"
+                value={testForm.durationMinutes}
+                onChange={(event) =>
+                  setTestForm((current) => ({ ...current, durationMinutes: Number(event.target.value) }))
+                }
+              />
+            </label>
+
+            <label className="field">
+              <span>Planned question count</span>
+              <input
+                type="number"
+                min="1"
+                value={testForm.questionCount}
+                onChange={(event) =>
+                  setTestForm((current) => ({ ...current, questionCount: Number(event.target.value) }))
+                }
+              />
+            </label>
+          </div>
+
+          <div className="inline-choice-row">
+            <label className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={testForm.isActive}
+                onChange={(event) => setTestForm((current) => ({ ...current, isActive: event.target.checked }))}
+              />
+              <span>Test is active</span>
+            </label>
+
+            <label className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={testForm.isDemo}
+                onChange={(event) =>
+                  setTestForm((current) => ({
+                    ...current,
+                    isDemo: event.target.checked,
+                    demoKey: event.target.checked ? current.demoKey || current.slug || "" : "",
+                  }))
+                }
+              />
+              <span>Open this as a public demo test</span>
+            </label>
+          </div>
+
+          {testForm.isDemo ? (
+            <label className="field">
+              <span>Demo key</span>
+              <input
+                type="text"
+                value={testForm.demoKey}
+                onChange={(event) => setTestForm((current) => ({ ...current, demoKey: event.target.value }))}
+                placeholder="example: mathematics-ma-2023-june"
+              />
+            </label>
+          ) : null}
+
+          <div className="editor-actions">
+            <button type="submit" className="button" disabled={savingTest}>
+              {savingTest ? "Saving..." : testForm._id ? "Update test" : "Create test"}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section id="available-tests-section" className="workspace-section">
+        <div className="section-headline">
+          <div>
+            <p className="section-tag">Available tests</p>
+            <h3>Open a saved test and continue working on it.</h3>
+          </div>
+        </div>
+
+        {tests.length ? (
+          <div className="test-line-list">
+            {tests.map((test) => (
+              <article key={test._id} className="test-line-item">
+                <div>
+                  <p className={`pill ${test.testType === "flt" ? "pill-alt" : ""}`}>
+                    {test.testType === "flt" ? "FLT" : "Subject"}
+                  </p>
+                  <h4>{test.name}</h4>
+                  <p className="muted-text">{test.description || "No description added yet."}</p>
+                  <p className="test-line-meta">
+                    {test.examName || "Exam"} | {test.questionBankSize}/{test.questionCount} questions |{" "}
+                    {test.durationMinutes} mins
+                  </p>
+                </div>
+
+                <div className="action-row">
+                  {test._id === activeTestId ? <span className="role-tag role-tag-admin">Open</span> : null}
+                  <button type="button" className="button button-ghost" onClick={() => handleSelectTest(test)}>
+                    Edit test
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="empty-state">No tests yet. Create the first one from the section above.</p>
+        )}
+      </section>
+
+      <section id="question-bank-section" className="workspace-section">
+        <div className="section-headline">
+          <div>
+            <p className="section-tag">Question bank</p>
+            <h3>{activeTest ? `Questions inside ${activeTest.name}` : "Save a test first"}</h3>
+          </div>
+
+          {activeTest ? (
+            <p className="workspace-meta">
+              {activeTest.questionBankSize} in bank | target {activeTest.questionCount} |{" "}
+              {activeTest.testType === "flt" ? "Full length" : "Subject-wise"}
+            </p>
+          ) : null}
+        </div>
+
+        {questionError ? <p className="form-error">{questionError}</p> : null}
+
+        {activeTest ? (
+          <>
+            <QuestionForm
+              categories={tests}
+              defaultCategoryId={activeTest._id}
+              defaultTestType={activeTest.testType}
+              hideCategoryField
+              fixedCategoryName={activeTest.name}
+              fixedCategoryMeta={`${activeTest.examName || "Exam"} | ${
+                activeTest.testType === "flt" ? "Full length" : "Subject-wise"
+              }`}
+              eyebrow="Question bank"
+              title={editingQuestion ? "Edit question" : "Add a question"}
+              initialValues={editingQuestion}
+              onSubmit={handleSubmitQuestion}
+              onCancel={() => setEditingQuestion(null)}
+              submitting={savingQuestion}
+            />
+
+            <div className="question-directory">
+              <div className="question-directory-header">
+                <p className="section-tag">Existing questions</p>
+                <span className="muted-text">{questionLoading ? "Refreshing..." : `${questions.length} loaded`}</span>
+              </div>
+
+              {questionLoading ? (
+                <p className="empty-state">Loading questions...</p>
+              ) : questions.length ? (
+                <div className="question-line-list">
+                  {questions.map((question, index) => (
+                    <article key={question._id} className="question-line-item">
+                      <div>
+                        <p className="question-line-title">
+                          Q{index + 1}. {question.questionText}
+                        </p>
+                        <p className="question-line-copy">
+                          Correct answer: {optionLabels[question.correctAnswer]}{" "}
+                          {question.questionImage ? "| Includes figure" : ""}
+                        </p>
+                      </div>
+
+                      <div className="action-row">
+                        <button
+                          type="button"
+                          className="button button-ghost"
+                          onClick={() => setEditingQuestion(question)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="button button-danger"
+                          onClick={() => handleDeleteQuestion(question._id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="empty-state">No questions yet. Add the first question from the form above.</p>
+              )}
+            </div>
+          </>
+        ) : (
+          <p className="empty-state">
+            Create and save the test metadata first. After that, the question bank will open here in the same top to
+            bottom flow.
+          </p>
+        )}
+      </section>
     </div>
   );
 };
