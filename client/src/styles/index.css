@@ -965,6 +965,20 @@ select {
   line-height: 1.8;
 }
 
+.exam-question-image-wrap,
+.review-question-image-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.exam-question-image,
+.review-question-image {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid rgba(18, 38, 63, 0.1);
+  background: #ffffff;
+}
+
 .exam-question-body {
   display: grid;
   gap: 1.4rem;

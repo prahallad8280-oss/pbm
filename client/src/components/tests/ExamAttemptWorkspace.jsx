@@ -91,6 +91,12 @@ const ExamAttemptWorkspace = ({
             <div className="exam-question-body">
               <p className="exam-question-text">{currentQuestion.questionText}</p>
 
+              {currentQuestion.questionImage ? (
+                <div className="exam-question-image-wrap">
+                  <img src={currentQuestion.questionImage} alt={`Question ${currentIndex + 1} figure`} className="exam-question-image" />
+                </div>
+              ) : null}
+
               <div className="exam-options-grid">
                 {currentQuestion.options.map((option, optionIndex) => {
                   const isSelected = currentState.selectedAnswer === optionIndex;

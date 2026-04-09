@@ -17,6 +17,11 @@ const questionSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    questionImage: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     options: {
       type: [String],
       required: true,
@@ -49,4 +54,3 @@ const questionSchema = new mongoose.Schema(
 const Question = mongoose.model("Question", questionSchema);
 
 export default Question;
-

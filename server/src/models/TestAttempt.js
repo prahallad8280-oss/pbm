@@ -11,6 +11,10 @@ const responseSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    questionImage: {
+      type: String,
+      default: "",
+    },
     options: {
       type: [String],
       required: true,
@@ -107,4 +111,3 @@ const testAttemptSchema = new mongoose.Schema(
 const TestAttempt = mongoose.model("TestAttempt", testAttemptSchema);
 
 export default TestAttempt;
-

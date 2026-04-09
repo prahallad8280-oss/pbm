@@ -29,9 +29,12 @@ const App = () => (
     <Route path="/open-tests/:featuredKey/result" element={<PublicTestResultPage />} />
 
     <Route element={<ProtectedRoute roles={["user", "admin"]} />}>
+      <Route path="/tests/start/:categoryId" element={<TestAttemptPage />} />
+    </Route>
+
+    <Route element={<ProtectedRoute roles={["user", "admin"]} />}>
       <Route element={<AppShell />}>
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/tests/start/:categoryId" element={<TestAttemptPage />} />
         <Route path="/attempts" element={<AttemptHistoryPage />} />
         <Route path="/results/:attemptId" element={<TestResultPage />} />
       </Route>

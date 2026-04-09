@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" fill="none">
+  <rect width="900" height="520" fill="#ffffff"/>
+  <g font-family="Arial, sans-serif" fill="#23354f">
+    <text x="120" y="38" font-size="28" font-weight="700">A</text>
+    <text x="465" y="38" font-size="28" font-weight="700">B</text>
+    <text x="120" y="282" font-size="28" font-weight="700">C</text>
+    <text x="465" y="282" font-size="28" font-weight="700">D</text>
+  </g>
+
+  <g stroke="#394b63" stroke-width="4">
+    <line x1="95" y1="55" x2="95" y2="215"/>
+    <line x1="95" y1="215" x2="300" y2="215"/>
+    <line x1="440" y1="55" x2="440" y2="215"/>
+    <line x1="440" y1="215" x2="645" y2="215"/>
+    <line x1="95" y1="300" x2="95" y2="460"/>
+    <line x1="95" y1="460" x2="300" y2="460"/>
+    <line x1="440" y1="300" x2="440" y2="460"/>
+    <line x1="440" y1="460" x2="645" y2="460"/>
+  </g>
+
+  <g font-family="Arial, sans-serif" font-size="18" fill="#4e617b">
+    <text x="18" y="145" transform="rotate(-90 18 145)">temperature</text>
+    <text x="155" y="248">time</text>
+    <text x="363" y="145" transform="rotate(-90 363 145)">temperature</text>
+    <text x="500" y="248">time</text>
+    <text x="18" y="390" transform="rotate(-90 18 390)">temperature</text>
+    <text x="155" y="493">time</text>
+    <text x="363" y="390" transform="rotate(-90 363 390)">temperature</text>
+    <text x="500" y="493">time</text>
+  </g>
+
+  <path d="M120 80 C145 130 180 175 275 188" stroke="#f0a63d" stroke-width="6" fill="none"/>
+  <path d="M120 105 C145 145 180 180 275 200" stroke="#2f83d6" stroke-width="6" fill="none"/>
+
+  <path d="M465 80 C500 135 520 205 612 205" stroke="#f0a63d" stroke-width="6" fill="none"/>
+  <path d="M465 135 C500 165 540 180 612 160" stroke="#2f83d6" stroke-width="6" fill="none"/>
+
+  <path d="M120 325 C150 385 185 435 275 448" stroke="#f0a63d" stroke-width="6" fill="none"/>
+  <path d="M120 370 C150 410 185 440 275 448" stroke="#2f83d6" stroke-width="6" fill="none"/>
+
+  <path d="M465 325 C495 385 530 432 620 442" stroke="#f0a63d" stroke-width="6" fill="none"/>
+  <path d="M465 370 C495 410 530 430 620 410" stroke="#2f83d6" stroke-width="6" fill="none"/>
+</svg>

@@ -40,6 +40,7 @@ const buildStoredResponses = (questionOrder, questions, responses = []) => {
       return {
         questionId: question._id,
         questionText: question.questionText,
+        questionImage: question.questionImage || "",
         options: question.options,
         correctAnswer: question.correctAnswer,
         explanation: question.explanation,

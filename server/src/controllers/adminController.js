@@ -15,7 +15,7 @@ const toSlug = (value = "") =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-const validateQuestionPayload = ({ questionText, category, testType, options, correctAnswer, explanation }) => {
+const validateQuestionPayload = ({ questionText, category, testType, options, correctAnswer, explanation, questionImage }) => {
   if (!questionText || !category || !testType || !explanation) {
     return "Question text, category, test type, and explanation are required.";
   }
@@ -26,6 +26,10 @@ const validateQuestionPayload = ({ questionText, category, testType, options, co
 
   if (![0, 1, 2, 3].includes(Number(correctAnswer))) {
     return "correctAnswer must be a number between 0 and 3.";
+  }
+
+  if (questionImage && !String(questionImage).trim()) {
+    return "questionImage must be a valid path or URL.";
   }
 
   return null;
@@ -277,6 +281,7 @@ export const createQuestion = asyncHandler(async (req, res) => {
 
   const question = await Question.create({
     questionText: req.body.questionText,
+    questionImage: req.body.questionImage || "",
     category: req.body.category,
     testType: req.body.testType,
     options: req.body.options,
@@ -306,6 +311,7 @@ export const updateQuestion = asyncHandler(async (req, res) => {
   }
 
   question.questionText = req.body.questionText;
+  question.questionImage = req.body.questionImage || "";
   question.category = req.body.category;
   question.testType = req.body.testType;
   question.options = req.body.options;

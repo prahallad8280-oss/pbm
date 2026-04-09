@@ -110,6 +110,7 @@ const QuestionManagerPage = () => {
                 <p className="muted-text">
                   Category: {question.category?.name} | Correct answer: {optionLabels[question.correctAnswer]}
                 </p>
+                {question.questionImage ? <p className="muted-text">Includes question figure</p> : null}
               </article>
             ))}
           </div>
@@ -122,4 +123,3 @@ const QuestionManagerPage = () => {
 };
 
 export default QuestionManagerPage;
-

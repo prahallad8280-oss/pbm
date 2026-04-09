@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 const emptyQuestion = {
   questionText: "",
+  questionImage: "",
   category: "",
   testType: "subject",
   options: ["", "", "", ""],
@@ -73,6 +74,16 @@ const QuestionForm = ({ categories, initialValues, onCancel, onSubmit, submittin
           value={form.questionText}
           onChange={(event) => setForm((current) => ({ ...current, questionText: event.target.value }))}
           required
+        />
+      </label>
+
+      <label className="field">
+        <span>Question image</span>
+        <input
+          type="text"
+          value={form.questionImage}
+          onChange={(event) => setForm((current) => ({ ...current, questionImage: event.target.value }))}
+          placeholder="Optional image path or URL like /question-assets/example.svg"
         />
       </label>
 

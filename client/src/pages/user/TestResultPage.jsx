@@ -83,6 +83,12 @@ const TestResultPage = () => {
 
               <h4>{response.questionText}</h4>
 
+              {response.questionImage ? (
+                <div className="review-question-image-wrap">
+                  <img src={response.questionImage} alt={`Question ${index + 1} figure`} className="review-question-image" />
+                </div>
+              ) : null}
+
               <div className="review-options">
                 {response.options.map((option, optionIndex) => (
                   <div
@@ -117,4 +123,3 @@ const TestResultPage = () => {
 };
 
 export default TestResultPage;
-

@@ -12,6 +12,7 @@ export const shuffleArray = (items = []) => {
 export const sanitizeQuestion = (question) => ({
   id: question._id,
   questionText: question.questionText,
+  questionImage: question.questionImage || "",
   options: question.options,
   testType: question.testType,
 });
@@ -46,6 +47,7 @@ export const formatAttemptForClient = (attempt) => ({
   responses: attempt.responses.map((response) => ({
     questionId: response.questionId,
     questionText: response.questionText,
+    questionImage: response.questionImage || "",
     options: response.options,
     correctAnswer: response.correctAnswer,
     explanation: response.explanation,
