@@ -275,9 +275,7 @@ const LandingPage = () => {
           </Link>
 
           <nav className="site-nav">
-            {user?.role === "admin" ? (
-              <Link to="/admin">Dashboard</Link>
-            ) : null}
+            {user ? <Link to={user.role === "admin" ? "/admin" : "/dashboard"}>{user.role === "admin" ? "Dashboard" : "Student Dashboard"}</Link> : null}
             <button type="button" className="site-nav-button" onClick={handleAuthAction}>
               {user ? "Logout" : "Login/Signup"}
             </button>

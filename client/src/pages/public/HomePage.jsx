@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import LoginForm from "../../components/auth/LoginForm.jsx";
+import RegisterForm from "../../components/auth/RegisterForm.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 const examPointers = [
@@ -12,19 +13,21 @@ const examPointers = [
 
 const HomePage = () => {
   const { user } = useAuth();
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [loginModalClosing, setLoginModalClosing] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalClosing, setAuthModalClosing] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
 
-  const closeLoginModal = () => {
-    setLoginModalClosing(true);
+  const closeAuthModal = () => {
+    setAuthModalClosing(true);
     window.setTimeout(() => {
-      setLoginModalOpen(false);
-      setLoginModalClosing(false);
+      setAuthModalOpen(false);
+      setAuthModalClosing(false);
+      setAuthMode("login");
     }, 220);
   };
 
   useEffect(() => {
-    if (!loginModalOpen) {
+    if (!authModalOpen) {
       return undefined;
     }
 
@@ -33,7 +36,7 @@ const HomePage = () => {
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
-        closeLoginModal();
+        closeAuthModal();
       }
     };
 
@@ -43,7 +46,7 @@ const HomePage = () => {
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [loginModalOpen]);
+  }, [authModalOpen]);
 
   return (
     <div className="home-page">
@@ -63,7 +66,14 @@ const HomePage = () => {
             {user ? (
               <Link to={user.role === "admin" ? "/admin" : "/dashboard"}>Dashboard</Link>
             ) : (
-              <button type="button" className="site-nav-button" onClick={() => setLoginModalOpen(true)}>
+              <button
+                type="button"
+                className="site-nav-button"
+                onClick={() => {
+                  setAuthMode("login");
+                  setAuthModalOpen(true);
+                }}
+              >
                 Login
               </button>
             )}
@@ -191,7 +201,16 @@ const HomePage = () => {
           <div className="footer-links">
             <a href="#about">About Me</a>
             <a href="#contact">Contact</a>
-            <Link to="/login">Login</Link>
+            <button
+              type="button"
+              className="site-nav-button footer-action-button"
+              onClick={() => {
+                setAuthMode("login");
+                setAuthModalOpen(true);
+              }}
+            >
+              Login
+            </button>
           </div>
         </div>
       </footer>
