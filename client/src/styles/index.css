@@ -205,6 +205,93 @@ select {
   margin-top: 1.6rem;
 }
 
+.notice-board-section {
+  padding: 2rem 0 0;
+  background: #fff8f2;
+}
+
+.notice-board {
+  padding: 1.5rem;
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 248, 241, 0.98), rgba(255, 255, 255, 0.98)),
+    #ffffff;
+  border: 1px solid rgba(18, 38, 63, 0.08);
+  box-shadow: 0 16px 34px rgba(18, 38, 63, 0.08);
+}
+
+.notice-board-intro h2 {
+  margin: 0.2rem 0 0;
+}
+
+.notice-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.notice-item {
+  padding: 1.15rem 1.2rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(18, 38, 63, 0.08);
+}
+
+.notice-status {
+  margin: 0 0 0.55rem;
+  color: #9d151a;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.notice-item h3 {
+  margin: 0 0 0.55rem;
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+.notice-item p:last-child {
+  margin: 0;
+  color: #53647d;
+  line-height: 1.7;
+}
+
+.exam-tracks-section {
+  padding: 3rem 0;
+  background: #ffffff;
+}
+
+.exam-tracks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
+  margin-top: 1.2rem;
+}
+
+.exam-track-card {
+  padding: 1.35rem;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 248, 243, 0.95), rgba(255, 255, 255, 0.98)),
+    #ffffff;
+  border: 1px solid rgba(18, 38, 63, 0.08);
+  box-shadow: 0 14px 32px rgba(18, 38, 63, 0.08);
+}
+
+.exam-track-card h3 {
+  margin: 0 0 0.7rem;
+  font-size: 1.28rem;
+}
+
+.exam-track-card p {
+  margin: 0 0 1rem;
+  color: #53647d;
+  line-height: 1.7;
+}
+
 .featured-tests-section {
   padding: 2.8rem 0 3.2rem;
   background: #fff1f3;
@@ -1059,6 +1146,8 @@ select {
 }
 
 @media (max-width: 1024px) {
+  .notice-list,
+  .exam-tracks-grid,
   .featured-tests-grid,
   .content-layout,
   .about-layout,
@@ -1117,6 +1206,8 @@ select {
     font-size: clamp(1.9rem, 7vw, 2.8rem);
   }
 
+  .notice-list,
+  .exam-tracks-grid,
   .featured-tests-grid {
     grid-template-columns: 1fr;
   }

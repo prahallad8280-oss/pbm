@@ -7,9 +7,37 @@ import RegisterForm from "../../components/auth/RegisterForm.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 const examPointers = [
-  "CSIR NET is conducted for Junior Research Fellowship and eligibility for lectureship or assistant professor roles in science streams.",
-  "Preparation works best when concept revision is paired with timed mock practice and honest review of mistakes.",
-  "This portal is designed to help aspirants practice subject-wise tests as well as full length tests from one place.",
+  "One portal can support preparation for CSIR NET, GATE, Odisha state-level assistant professor exams, NBHM, TIFR, and related mathematics tests.",
+  "Different exams need different practice styles, from full length mocks to PYQ-based revision and topic-wise drills.",
+  "Preparation improves faster when every exam track still follows the same cycle of practice, review, and correction.",
+];
+
+const examTracks = [
+  {
+    title: "CSIR NET",
+    description: "Subject-wise tests, full length practice, and result review for mathematics-focused competitive prep.",
+    cta: "Explore CSIR practice",
+  },
+  {
+    title: "GATE Mathematics",
+    description: "Timed problem-solving sets and structured revision for graduate-level entrance preparation.",
+    cta: "Explore GATE sets",
+  },
+  {
+    title: "Odisha Assistant Professor",
+    description: "State-level preparation support with exam-oriented practice and focused mathematics coverage.",
+    cta: "Explore state exams",
+  },
+  {
+    title: "NBHM PYQs",
+    description: "Past-year style preparation to strengthen reasoning, proofs, and higher mathematics problem solving.",
+    cta: "View NBHM PYQs",
+  },
+  {
+    title: "TIFR PYQs",
+    description: "Institute-level past paper preparation with deeper problem practice and review-friendly analysis.",
+    cta: "View TIFR PYQs",
+  },
 ];
 
 const featuredMathFlts = [
@@ -19,6 +47,24 @@ const featuredMathFlts = [
   { year: "2024", session: "December" },
   { year: "2025", session: "June" },
   { year: "2025", session: "December" },
+];
+
+const noticeItems = [
+  {
+    status: "Live",
+    title: "Mathematical Sciences MA full length mocks are active",
+    detail: "June and December session practice from 2023 to 2025 is available on the platform now.",
+  },
+  {
+    status: "Open Sample",
+    title: "2023 June sample test is available without login",
+    detail: "Visitors can try the public sample first before creating an account for protected mock series.",
+  },
+  {
+    status: "Growing",
+    title: "The portal is expanding beyond CSIR NET",
+    detail: "GATE Mathematics, Odisha Assistant Professor, NBHM PYQs, TIFR PYQs, and more tracks are being added.",
+  },
 ];
 
 const normalizeText = (value = "") => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -206,15 +252,15 @@ const LandingPage = () => {
 
   return (
     <div className="home-page">
-      <div className="home-topbar">CSIR NET mock tests for Lectureship and JRF preparation</div>
+      <div className="home-topbar">Practice for CSIR NET, GATE, Odisha Assistant Professor, NBHM, TIFR, and more</div>
 
       <header className="site-header">
         <div className="home-shell site-header-inner">
           <Link to="/" className="site-brand">
-            <span className="site-brand-mark">CSIR</span>
+            <span className="site-brand-mark">MATH</span>
             <div>
-              <p>CSIR NET Mock Test</p>
-              <span>Exam practice portal</span>
+              <p>Mathematics Exam Hub</p>
+              <span>Mock tests, PYQs, and revision portal</span>
             </div>
           </Link>
 
@@ -235,18 +281,62 @@ const LandingPage = () => {
         <section className="landing-hero">
           <div className="home-shell">
             <div className="landing-hero-copy">
-              <p className="section-tag">CSIR UGC NET preparation portal</p>
-              <h1>CSIR UGC National Eligibility Test (CSIR NET) Mock Test for Lectureship and JRF</h1>
+              <p className="section-tag">Competitive mathematics preparation portal</p>
+              <h1>Mock tests, PYQs, and structured practice for CSIR NET, GATE, Odisha exams, NBHM, TIFR, and more</h1>
               <p className="landing-summary">
-                Prepare with subject-wise tests, full length mock exams, timer-based practice, and clear post-test
-                analysis designed to make revision more disciplined.
+                Prepare from one place with full length mocks, topic-wise practice, PYQ-oriented preparation, and
+                clear post-test analysis across multiple mathematics exam tracks.
               </p>
 
               <div className="landing-actions">
                 <a href="#exam-info" className="button button-secondary">
-                  Read Exam Info
+                  Explore Platform
                 </a>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="notice-board-section">
+          <div className="home-shell">
+            <div className="notice-board">
+              <div className="notice-board-intro">
+                <p className="section-tag">Notifications</p>
+                <h2>Latest platform updates and exam-track announcements.</h2>
+              </div>
+
+              <div className="notice-list">
+                {noticeItems.map((item) => (
+                  <article key={item.title} className="notice-item">
+                    <p className="notice-status">{item.status}</p>
+                    <h3>{item.title}</h3>
+                    <p>{item.detail}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="exam-tracks-section">
+          <div className="home-shell">
+            <div className="section-heading">
+              <div>
+                <p className="section-tag">Exam tracks</p>
+                <h2>Use one preparation space for multiple mathematics exams and institutions.</h2>
+              </div>
+            </div>
+
+            <div className="exam-tracks-grid">
+              {examTracks.map((track) => (
+                <article key={track.title} className="exam-track-card">
+                  <h3>{track.title}</h3>
+                  <p>{track.description}</p>
+                  <button type="button" className="button button-secondary" onClick={handleExploreMore}>
+                    {user ? track.cta : "Login to explore"}
+                  </button>
+                </article>
+              ))}
             </div>
           </div>
         </section>
@@ -255,8 +345,8 @@ const LandingPage = () => {
           <div className="home-shell">
             <div className="section-heading">
               <div>
-                <p className="section-tag">Mathematical Sciences MA</p>
-                <h2>Full length mock tests for June and December sessions from 2023 to 2025.</h2>
+                <p className="section-tag">Featured mathematics series</p>
+                <h2>Current full length mock tests for Mathematical Sciences MA from 2023 to 2025.</h2>
               </div>
             </div>
 
@@ -302,26 +392,26 @@ const LandingPage = () => {
         <section id="exam-info" className="content-section">
           <div className="home-shell content-layout">
             <article className="content-article">
-              <p className="section-tag">About the exam</p>
-              <h2>Understand the exam before you start solving mocks.</h2>
+              <p className="section-tag">How the platform helps</p>
+              <h2>Prepare for different exam patterns without jumping across disconnected resources.</h2>
               <p>
-                The Council of Scientific and Industrial Research conducts the CSIR NET examination to evaluate
-                candidates for research fellowship and eligibility in higher education teaching pathways across major
-                science disciplines.
+                Mathematics aspirants often prepare for more than one exam at the same time. Someone targeting CSIR NET
+                may also attempt GATE, state assistant professor recruitment tests, NBHM, or TIFR-style papers
+                depending on goals and timelines.
               </p>
               <p>
-                Serious preparation usually needs three things working together: concept clarity, timed problem
-                practice, and structured review after each test. A mock test is not just for checking marks. It should
-                also help you improve pacing, remove weak areas, and build exam confidence over time.
+                That is why this home page is shifting from a single-exam identity to a broader mathematics preparation
+                hub. The goal is to keep mocks, PYQs, structured revision, and exam-specific practice flows under one
+                roof.
               </p>
               <p>
-                This platform is designed around that cycle. Students can practice tests, view scores, check detailed
-                explanations, and revisit previous attempts to track how their preparation is moving.
+                The common layer remains the same: practice with discipline, review every mistake carefully, and keep
+                improving through repeated attempts instead of scattered study.
               </p>
             </article>
 
             <aside className="content-aside">
-              <h3>Exam essentials</h3>
+              <h3>Preparation essentials</h3>
               <ul className="info-list">
                 {examPointers.map((point) => (
                   <li key={point}>{point}</li>
@@ -335,26 +425,26 @@ const LandingPage = () => {
           <div className="home-shell about-layout">
             <div className="about-text">
               <p className="section-tag">About Me</p>
-              <h2>Built to make CSIR NET practice feel more organized and less scattered.</h2>
+              <h2>Built to make multi-exam mathematics preparation feel more organized and less scattered.</h2>
               <p>
                 This portal is meant for learners who want a simple place to practice regularly, review mistakes, and
-                stay close to the exam pattern without depending on random disconnected resources.
+                stay close to multiple exam patterns without depending on random disconnected resources.
               </p>
               <p>
-                You can later replace this content with your own personal introduction, institute details, mentoring
-                approach, or academic background. The structure is here so the page already feels like a proper exam
-                website.
+                You can later replace this content with your own academic background, mentoring style, institute
+                details, or the exact exam mix you want to serve. The structure is already oriented toward a broader
+                mathematics-preparation identity.
               </p>
             </div>
 
             <div className="about-points">
               <div>
-                <strong>Subject-wise tests</strong>
-                <p>Revise one stream at a time and build stronger topic coverage.</p>
+                <strong>Multi-exam practice</strong>
+                <p>Keep CSIR, GATE, state exams, and institute papers connected in one workflow.</p>
               </div>
               <div>
-                <strong>Full length mocks</strong>
-                <p>Practice under pressure before the actual exam day.</p>
+                <strong>Mocks and PYQs</strong>
+                <p>Mix full length tests with past paper preparation as the platform grows.</p>
               </div>
               <div>
                 <strong>Result analysis</strong>
@@ -379,8 +469,8 @@ const LandingPage = () => {
                 <strong>Support hours:</strong> Monday to Saturday
               </p>
               <p>
-                <strong>Access:</strong> Students can register normally, and admins can manage the question bank after
-                login.
+                <strong>Access:</strong> Students can register normally, and admins can manage question banks, mocks,
+                and feedback for multiple exam tracks after login.
               </p>
             </div>
           </div>
@@ -458,8 +548,8 @@ const LandingPage = () => {
       <footer className="site-footer">
         <div className="home-shell site-footer-inner">
           <div>
-            <p className="section-tag">CSIR NET Mock Test</p>
-            <h3>Practice regularly, review carefully, and improve with every attempt.</h3>
+            <p className="section-tag">Mathematics Exam Hub</p>
+            <h3>Practice regularly, review carefully, and prepare across exams with one steady system.</h3>
           </div>
 
           <div className="footer-links">
