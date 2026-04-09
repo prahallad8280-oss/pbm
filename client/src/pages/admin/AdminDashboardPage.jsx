@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 import api from "../../api/client.js";
-import StatCard from "../../components/common/StatCard.jsx";
 
 const AdminDashboardPage = () => {
   const [overview, setOverview] = useState(null);
@@ -29,27 +28,53 @@ const AdminDashboardPage = () => {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="section-tag">Control center</p>
-          <h2>Manage questions, categories, and learner activity.</h2>
-        </div>
-
-        {overview ? (
-          <div className="stats-grid">
-            <StatCard label="Students" value={overview.stats.userCount} hint="Registered learners" />
-            <StatCard label="Categories" value={overview.stats.categoryCount} hint="Subject and FLT collections" />
-            <StatCard label="Questions" value={overview.stats.questionCount} hint="In the current bank" />
-            <StatCard label="Completed tests" value={overview.stats.attemptCount} hint="Submitted attempts" />
-            <StatCard label="Notifications" value={overview.stats.notificationCount} hint="Visible home-page notices" />
-            <StatCard label="Feedback" value={overview.stats.feedbackCount} hint="Landing-page submissions" />
-          </div>
-        ) : null}
+      <section className="workspace-intro">
+        <p className="section-tag">Admin dashboard</p>
+        <h2>Manage the platform, review activity, and keep the test bank in shape.</h2>
+        <p className="workspace-lead">
+          Use the test builder for new papers, manage learners from the user control page, and keep notifications and
+          feedback updated from one workspace.
+        </p>
       </section>
+
+      {overview ? (
+        <section className="metric-strip">
+          <article className="metric-item">
+            <span>Students</span>
+            <strong>{overview.stats.userCount}</strong>
+            <p>Registered learners.</p>
+          </article>
+          <article className="metric-item">
+            <span>Tests</span>
+            <strong>{overview.stats.categoryCount}</strong>
+            <p>Subject-wise and full-length sets.</p>
+          </article>
+          <article className="metric-item">
+            <span>Questions</span>
+            <strong>{overview.stats.questionCount}</strong>
+            <p>Total question bank size.</p>
+          </article>
+          <article className="metric-item">
+            <span>Completed tests</span>
+            <strong>{overview.stats.attemptCount}</strong>
+            <p>Submitted attempts across users.</p>
+          </article>
+          <article className="metric-item">
+            <span>Notifications</span>
+            <strong>{overview.stats.notificationCount}</strong>
+            <p>Visible home-page notices.</p>
+          </article>
+          <article className="metric-item">
+            <span>Feedback</span>
+            <strong>{overview.stats.feedbackCount}</strong>
+            <p>Messages waiting in the inbox.</p>
+          </article>
+        </section>
+      ) : null}
 
       {error ? <p className="form-error">{error}</p> : null}
 
-      <section className="content-section">
+      <section className="workspace-section">
         <div className="section-headline">
           <div>
             <p className="section-tag">Recent activity</p>
@@ -57,34 +82,24 @@ const AdminDashboardPage = () => {
           </div>
         </div>
 
-        <div className="table-card">
-          {overview?.recentAttempts?.length ? (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Student</th>
-                  <th>Test</th>
-                  <th>Score</th>
-                  <th>Accuracy</th>
-                  <th>Submitted</th>
-                </tr>
-              </thead>
-              <tbody>
-                {overview.recentAttempts.map((attempt) => (
-                  <tr key={attempt.id}>
-                    <td>{attempt.user?.name}</td>
-                    <td>{attempt.category?.name}</td>
-                    <td>{attempt.score}</td>
-                    <td>{attempt.accuracy}%</td>
-                    <td>{new Date(attempt.submittedAt).toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="empty-state">No completed attempts yet.</p>
-          )}
-        </div>
+        {overview?.recentAttempts?.length ? (
+          <div className="activity-line-list">
+            {overview.recentAttempts.map((attempt) => (
+              <article key={attempt.id} className="activity-line-item">
+                <div>
+                  <p className="activity-line-title">{attempt.user?.name}</p>
+                  <p className="activity-line-copy">
+                    {attempt.category?.name} | Score {attempt.score} | Accuracy {attempt.accuracy}%
+                  </p>
+                </div>
+
+                <span className="activity-line-time">{new Date(attempt.submittedAt).toLocaleString()}</span>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="empty-state">No completed attempts yet.</p>
+        )}
       </section>
     </div>
   );

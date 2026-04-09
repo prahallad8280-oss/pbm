@@ -18,15 +18,13 @@ const AppShell = () => {
       ? [
           { to: "/admin", label: "Overview" },
           { to: "/admin/users", label: "Users" },
-          { to: "/admin/questions", label: "Questions" },
-          { to: "/admin/categories", label: "Categories" },
+          { to: "/admin/tests", label: "Create a Test" },
           { to: "/admin/notifications", label: "Notifications" },
           { to: "/admin/feedback", label: "Feedback" },
         ]
       : user?.role === "editor"
         ? [
-            { to: "/admin/questions", label: "Questions" },
-            { to: "/admin/categories", label: "Categories" },
+            { to: "/admin/tests", label: "Create a Test" },
             { to: "/admin/notifications", label: "Notifications" },
           ]
       : [

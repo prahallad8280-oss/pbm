@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const emptyQuestion = {
   questionText: "",
@@ -10,26 +10,49 @@ const emptyQuestion = {
   explanation: "",
 };
 
-const buildFormState = (values) =>
+const buildFormState = (values, defaults = {}) =>
   values
     ? {
+        ...emptyQuestion,
+        ...defaults,
         ...values,
         category: values.category?._id || values.category || "",
-        testType: values.testType || values.category?.testType || "subject",
+        testType: values.testType || values.category?.testType || defaults.testType || "subject",
         options: Array.isArray(values.options) ? [...values.options] : ["", "", "", ""],
         correctAnswer: Number(values.correctAnswer ?? 0),
       }
     : {
         ...emptyQuestion,
+        ...defaults,
         options: [...emptyQuestion.options],
       };
 
-const QuestionForm = ({ categories, initialValues, onCancel, onSubmit, submitting }) => {
-  const [form, setForm] = useState(buildFormState(initialValues));
+const QuestionForm = ({
+  categories,
+  initialValues,
+  onCancel,
+  onSubmit,
+  submitting,
+  defaultCategoryId = "",
+  defaultTestType = "subject",
+  hideCategoryField = false,
+  fixedCategoryName = "",
+  fixedCategoryMeta = "",
+  eyebrow = "Question bank",
+  title,
+}) => {
+  const defaults = useMemo(
+    () => ({
+      category: defaultCategoryId,
+      testType: defaultTestType,
+    }),
+    [defaultCategoryId, defaultTestType],
+  );
+  const [form, setForm] = useState(buildFormState(initialValues, defaults));
 
   useEffect(() => {
-    setForm(buildFormState(initialValues));
-  }, [initialValues]);
+    setForm(buildFormState(initialValues, defaults));
+  }, [initialValues, defaults]);
 
   const handleOptionChange = (index, value) => {
     setForm((current) => ({
@@ -57,8 +80,8 @@ const QuestionForm = ({ categories, initialValues, onCancel, onSubmit, submittin
     <form className="form-card" onSubmit={handleSubmit}>
       <div className="form-card-header">
         <div>
-          <p className="section-tag">Question bank</p>
-          <h3>{form._id ? "Edit question" : "Add question"}</h3>
+          <p className="section-tag">{eyebrow}</p>
+          <h3>{title || (form._id ? "Edit question" : "Add question")}</h3>
         </div>
         {form._id ? (
           <button type="button" className="button button-ghost" onClick={onCancel}>
@@ -88,17 +111,27 @@ const QuestionForm = ({ categories, initialValues, onCancel, onSubmit, submittin
       </label>
 
       <div className="field-grid">
-        <label className="field">
-          <span>Category</span>
-          <select value={form.category} onChange={(event) => handleCategoryChange(event.target.value)} required>
-            <option value="">Select category</option>
-            {categories.map((category) => (
-              <option key={category._id} value={category._id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        {hideCategoryField ? (
+          <div className="field fixed-field">
+            <span>Test</span>
+            <div className="fixed-field-value">
+              <strong>{fixedCategoryName || "Selected test"}</strong>
+              {fixedCategoryMeta ? <small>{fixedCategoryMeta}</small> : null}
+            </div>
+          </div>
+        ) : (
+          <label className="field">
+            <span>Category</span>
+            <select value={form.category} onChange={(event) => handleCategoryChange(event.target.value)} required>
+              <option value="">Select category</option>
+              {categories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
         <label className="field">
           <span>Test type</span>

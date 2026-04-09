@@ -3,10 +3,9 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import AppShell from "./components/layout/AppShell.jsx";
 import ProtectedRoute from "./components/layout/ProtectedRoute.jsx";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage.jsx";
-import CategoryManagerPage from "./pages/admin/CategoryManagerPage.jsx";
 import FeedbackManagerPage from "./pages/admin/FeedbackManagerPage.jsx";
 import NotificationManagerPage from "./pages/admin/NotificationManagerPage.jsx";
-import QuestionManagerPage from "./pages/admin/QuestionManagerPage.jsx";
+import TestBuilderPage from "./pages/admin/TestBuilderPage.jsx";
 import UserManagerPage from "./pages/admin/UserManagerPage.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
@@ -42,8 +41,9 @@ const App = () => (
 
     <Route element={<ProtectedRoute roles={["admin", "editor"]} />}>
       <Route element={<AppShell />}>
-        <Route path="/admin/questions" element={<QuestionManagerPage />} />
-        <Route path="/admin/categories" element={<CategoryManagerPage />} />
+        <Route path="/admin/tests" element={<TestBuilderPage />} />
+        <Route path="/admin/questions" element={<Navigate to="/admin/tests" replace />} />
+        <Route path="/admin/categories" element={<Navigate to="/admin/tests" replace />} />
         <Route path="/admin/notifications" element={<NotificationManagerPage />} />
       </Route>
     </Route>

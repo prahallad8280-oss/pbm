@@ -3,7 +3,7 @@ export const getWorkspacePathForRole = (role) => {
     case "admin":
       return "/admin";
     case "editor":
-      return "/admin/questions";
+      return "/admin/tests";
     default:
       return "/dashboard";
   }
@@ -55,9 +55,9 @@ export const getWorkspaceHeadingForRole = (role) => {
 export const getWorkspaceCopyForRole = (role) => {
   switch (role) {
     case "admin":
-      return "Manage questions, notices, feedback, and account access from one steady panel.";
+      return "Oversee users, the test builder, notifications, and the feedback inbox from one steady panel.";
     case "editor":
-      return "Maintain questions, categories, and home-page notices without touching account permissions.";
+      return "Build tests, update question banks, and manage home-page notices without touching account permissions.";
     default:
       return "Move between active mocks, revision history, and your next attempt without losing context.";
   }

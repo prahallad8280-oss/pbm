@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import api from "../../api/client.js";
-import StatCard from "../../components/common/StatCard.jsx";
 
 const DashboardPage = () => {
   const [categories, setCategories] = useState([]);
@@ -48,21 +47,36 @@ const DashboardPage = () => {
 
   return (
     <div className="page-stack">
-      <section className="hero-card">
-        <div>
-          <p className="section-tag">Your practice hub</p>
-          <h2>Choose a test format and keep your revision cycle moving.</h2>
-        </div>
-        <div className="stats-grid">
-          <StatCard label="Attempts completed" value={attempts.length} hint="All previous submissions" />
-          <StatCard label="Average accuracy" value={averageAccuracy} hint="Across completed tests" />
-          <StatCard label="Available tests" value={categories.length} hint="Subject and full length" />
-        </div>
+      <section className="workspace-intro">
+        <p className="section-tag">Student dashboard</p>
+        <h2>Choose a test format and keep the practice cycle moving.</h2>
+        <p className="workspace-lead">
+          Start a subject-wise drill when you want focused revision, or pick a full-length test when you want a longer
+          exam-style run.
+        </p>
+      </section>
+
+      <section className="metric-strip">
+        <article className="metric-item">
+          <span>Attempts completed</span>
+          <strong>{attempts.length}</strong>
+          <p>All submitted tests so far.</p>
+        </article>
+        <article className="metric-item">
+          <span>Average accuracy</span>
+          <strong>{averageAccuracy}</strong>
+          <p>Across your completed attempts.</p>
+        </article>
+        <article className="metric-item">
+          <span>Available tests</span>
+          <strong>{categories.length}</strong>
+          <p>Live subject and full-length sets.</p>
+        </article>
       </section>
 
       {error ? <p className="form-error">{error}</p> : null}
 
-      <section className="content-section">
+      <section className="workspace-section">
         <div className="section-headline">
           <div>
             <p className="section-tag">Subject-wise tests</p>
@@ -70,25 +84,31 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        <div className="card-grid">
-          {subjectTests.map((category) => (
-            <article key={category._id} className="test-card">
-              <p className="pill">Subject</p>
-              <h4>{category.name}</h4>
-              <p>{category.description}</p>
-              <div className="test-card-meta">
-                <span>{category.questionCount} questions</span>
-                <span>{category.durationMinutes} mins</span>
-              </div>
-              <Link className="button" to={`/tests/start/${category._id}`}>
-                Start test
-              </Link>
-            </article>
-          ))}
+        <div className="test-line-list">
+          {subjectTests.length ? (
+            subjectTests.map((category) => (
+              <article key={category._id} className="test-line-item">
+                <div>
+                  <p className="pill">Subject</p>
+                  <h4>{category.name}</h4>
+                  <p className="muted-text">{category.description}</p>
+                  <p className="test-line-meta">
+                    {category.questionCount} questions | {category.durationMinutes} mins
+                  </p>
+                </div>
+
+                <Link className="button" to={`/tests/start/${category._id}`}>
+                  Start test
+                </Link>
+              </article>
+            ))
+          ) : (
+            <p className="empty-state">No subject-wise tests are active yet.</p>
+          )}
         </div>
       </section>
 
-      <section className="content-section">
+      <section className="workspace-section">
         <div className="section-headline">
           <div>
             <p className="section-tag">Full length tests</p>
@@ -96,21 +116,27 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        <div className="card-grid">
-          {fullLengthTests.map((category) => (
-            <article key={category._id} className="test-card">
-              <p className="pill pill-alt">FLT</p>
-              <h4>{category.name}</h4>
-              <p>{category.description}</p>
-              <div className="test-card-meta">
-                <span>{category.questionCount} questions</span>
-                <span>{category.durationMinutes} mins</span>
-              </div>
-              <Link className="button" to={`/tests/start/${category._id}`}>
-                Start test
-              </Link>
-            </article>
-          ))}
+        <div className="test-line-list">
+          {fullLengthTests.length ? (
+            fullLengthTests.map((category) => (
+              <article key={category._id} className="test-line-item">
+                <div>
+                  <p className="pill pill-alt">FLT</p>
+                  <h4>{category.name}</h4>
+                  <p className="muted-text">{category.description}</p>
+                  <p className="test-line-meta">
+                    {category.questionCount} questions | {category.durationMinutes} mins
+                  </p>
+                </div>
+
+                <Link className="button" to={`/tests/start/${category._id}`}>
+                  Start test
+                </Link>
+              </article>
+            ))
+          ) : (
+            <p className="empty-state">No full-length tests are active yet.</p>
+          )}
         </div>
       </section>
     </div>
@@ -118,4 +144,3 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
-
