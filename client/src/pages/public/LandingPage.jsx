@@ -5,39 +5,12 @@ import api from "../../api/client.js";
 import LoginForm from "../../components/auth/LoginForm.jsx";
 import RegisterForm from "../../components/auth/RegisterForm.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { examTracks } from "../../data/examTracks.js";
 
 const examPointers = [
   "One portal can support preparation for CSIR NET, GATE, Odisha state-level assistant professor exams, NBHM, TIFR, and related mathematics tests.",
   "Different exams need different practice styles, from full length mocks to PYQ-based revision and topic-wise drills.",
   "Preparation improves faster when every exam track still follows the same cycle of practice, review, and correction.",
-];
-
-const examTracks = [
-  {
-    title: "CSIR NET",
-    description: "Subject-wise tests, full length practice, and result review for mathematics-focused competitive prep.",
-    href: "/dashboard",
-  },
-  {
-    title: "GATE Mathematics",
-    description: "Timed problem-solving sets and structured revision for graduate-level entrance preparation.",
-    href: "/dashboard",
-  },
-  {
-    title: "Odisha Assistant Professor",
-    description: "State-level preparation support with exam-oriented practice and focused mathematics coverage.",
-    href: "/dashboard",
-  },
-  {
-    title: "NBHM PYQs",
-    description: "Past-year style preparation to strengthen reasoning, proofs, and higher mathematics problem solving.",
-    href: "/dashboard",
-  },
-  {
-    title: "TIFR PYQs",
-    description: "Institute-level past paper preparation with deeper problem practice and review-friendly analysis.",
-    href: "/dashboard",
-  },
 ];
 
 const featuredMathFlts = [

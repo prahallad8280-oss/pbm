@@ -362,6 +362,78 @@ select {
   margin-top: 1.5rem;
 }
 
+.track-hero-section {
+  padding: 4rem 0 2rem;
+  background:
+    linear-gradient(180deg, rgba(255, 241, 236, 0.96), rgba(255, 249, 245, 0.92)),
+    #fff5ef;
+}
+
+.track-page-title {
+  margin: 0.2rem 0 0.9rem;
+  font-size: clamp(2.3rem, 4vw, 3.6rem);
+  line-height: 1.12;
+}
+
+.track-page-summary {
+  max-width: 760px;
+  margin: 0;
+  color: #4f617a;
+  font-size: 1.08rem;
+  line-height: 1.8;
+}
+
+.track-detail-section,
+.track-resource-section {
+  padding: 3rem 0;
+  background: #ffffff;
+}
+
+.track-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.7fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.track-detail-copy p:not(.section-tag) {
+  color: #495b74;
+  line-height: 1.85;
+}
+
+.track-detail-aside {
+  padding: 1.4rem 1.5rem;
+  border-radius: 24px;
+  background: #fcf1eb;
+  border: 1px solid rgba(18, 38, 63, 0.08);
+}
+
+.track-detail-aside .info-list {
+  margin-top: 0.8rem;
+}
+
+.track-section-title {
+  margin: 0.2rem 0 1rem;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  line-height: 1.25;
+}
+
+.track-resource-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.9rem;
+  color: #4f617a;
+  line-height: 1.75;
+}
+
+.track-page-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.6rem;
+}
+
 .featured-test-card {
   padding: 1.4rem;
   border-radius: 24px;
@@ -1199,6 +1271,7 @@ select {
 
 @media (max-width: 1024px) {
   .notification-layout,
+  .track-detail-layout,
   .featured-tests-grid,
   .content-layout,
   .about-layout,

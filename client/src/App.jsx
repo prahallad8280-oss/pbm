@@ -9,6 +9,7 @@ import NotificationManagerPage from "./pages/admin/NotificationManagerPage.jsx";
 import QuestionManagerPage from "./pages/admin/QuestionManagerPage.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
+import ExamTrackPage from "./pages/public/ExamTrackPage.jsx";
 import LandingPage from "./pages/public/LandingPage.jsx";
 import PublicTestAttemptPage from "./pages/public/PublicTestAttemptPage.jsx";
 import PublicTestResultPage from "./pages/public/PublicTestResultPage.jsx";
@@ -22,6 +23,7 @@ const App = () => (
     <Route path="/" element={<LandingPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
+    <Route path="/exam-tracks/:slug" element={<ExamTrackPage />} />
     <Route path="/open-tests/:featuredKey" element={<PublicTestAttemptPage />} />
     <Route path="/open-tests/:featuredKey/result" element={<PublicTestResultPage />} />
 
