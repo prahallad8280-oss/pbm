@@ -1,6 +1,14 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext.jsx";
+import {
+  getRoleDisplayName,
+  getWorkspaceCopyForRole,
+  getWorkspaceEyebrowForRole,
+  getWorkspaceHeadingForRole,
+  getWorkspacePathForRole,
+  getWorkspaceTitleForRole,
+} from "../../utils/roleRoutes.js";
 
 const AppShell = () => {
   const { logout, user } = useAuth();
@@ -9,18 +17,25 @@ const AppShell = () => {
     user?.role === "admin"
       ? [
           { to: "/admin", label: "Overview" },
+          { to: "/admin/users", label: "Users" },
           { to: "/admin/questions", label: "Questions" },
           { to: "/admin/categories", label: "Categories" },
           { to: "/admin/notifications", label: "Notifications" },
           { to: "/admin/feedback", label: "Feedback" },
         ]
+      : user?.role === "editor"
+        ? [
+            { to: "/admin/questions", label: "Questions" },
+            { to: "/admin/categories", label: "Categories" },
+            { to: "/admin/notifications", label: "Notifications" },
+          ]
       : [
           { to: "/dashboard", label: "Dashboard" },
           { to: "/attempts", label: "Previous Attempts" },
         ];
 
-  const dashboardTitle = user?.role === "admin" ? "Admin dashboard" : "Student dashboard";
-  const dashboardHome = user?.role === "admin" ? "/admin" : "/dashboard";
+  const dashboardTitle = getWorkspaceTitleForRole(user?.role);
+  const dashboardHome = getWorkspacePathForRole(user?.role);
 
   return (
     <div className="dashboard-page">
@@ -51,15 +66,11 @@ const AppShell = () => {
           <aside className="sidebar">
             <div className="sidebar-head">
               <div>
-                <p className="sidebar-eyebrow">{user?.role === "admin" ? "Admin workspace" : "Learner workspace"}</p>
-                <h1>{user?.role === "admin" ? "Control Center" : "Practice Suite"}</h1>
+                <p className="sidebar-eyebrow">{getWorkspaceEyebrowForRole(user?.role)}</p>
+                <h1>{getWorkspaceHeadingForRole(user?.role)}</h1>
               </div>
 
-              <p className="sidebar-copy">
-                {user?.role === "admin"
-                  ? "Manage questions, notices, and feedback from one steady panel."
-                  : "Move between active mocks, revision history, and your next attempt without losing context."}
-              </p>
+              <p className="sidebar-copy">{getWorkspaceCopyForRole(user?.role)}</p>
             </div>
 
             <nav className="sidebar-nav">
@@ -77,7 +88,7 @@ const AppShell = () => {
             <div className="sidebar-user">
               <div>
                 <p>{user?.name}</p>
-                <span>{user?.role === "admin" ? "Administrator" : "Learner"}</span>
+                <span>{getRoleDisplayName(user?.role)}</span>
               </div>
               <button type="button" className="button button-ghost" onClick={logout}>
                 Logout

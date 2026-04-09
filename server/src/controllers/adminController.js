@@ -6,6 +6,8 @@ import Feedback from "../models/Feedback.js";
 import Notification from "../models/Notification.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
+const MANAGED_USER_ROLES = ["user", "editor", "admin", "debarred"];
+
 const toSlug = (value = "") =>
   value
     .toLowerCase()
@@ -32,7 +34,7 @@ const validateQuestionPayload = ({ questionText, category, testType, options, co
 export const getAdminOverview = asyncHandler(async (_req, res) => {
   const [userCount, categoryCount, questionCount, attemptCount, feedbackCount, notificationCount, recentAttempts] =
     await Promise.all([
-    User.countDocuments({ role: "user" }),
+    User.countDocuments({ role: { $in: ["user", "debarred"] } }),
     TestCategory.countDocuments(),
     Question.countDocuments(),
     TestAttempt.countDocuments({ status: "completed" }),
@@ -74,6 +76,111 @@ export const getAdminOverview = asyncHandler(async (_req, res) => {
           }
         : null,
     })),
+  });
+});
+
+export const getAdminUsers = asyncHandler(async (_req, res) => {
+  const [users, attempts] = await Promise.all([
+    User.find().sort({ createdAt: -1 }).lean(),
+    TestAttempt.find({ status: "completed" })
+      .populate("category", "name testType")
+      .sort({ submittedAt: -1 })
+      .lean(),
+  ]);
+
+  const attemptsByUser = attempts.reduce((map, attempt) => {
+    const key = String(attempt.user);
+    map[key] = map[key] || [];
+    map[key].push(attempt);
+    return map;
+  }, {});
+
+  const summary = users.reduce(
+    (totals, user) => {
+      totals.total += 1;
+      if (Object.hasOwn(totals, user.role)) {
+        totals[user.role] += 1;
+      }
+      return totals;
+    },
+    {
+      total: 0,
+      user: 0,
+      editor: 0,
+      admin: 0,
+      debarred: 0,
+    },
+  );
+
+  res.json({
+    summary,
+    users: users.map((user) => {
+      const history = (attemptsByUser[String(user._id)] || []).map((attempt) => ({
+        id: attempt._id,
+        score: attempt.score,
+        totalQuestions: attempt.totalQuestions,
+        accuracy: attempt.accuracy,
+        submittedAt: attempt.submittedAt,
+        testType: attempt.testType,
+        category: attempt.category
+          ? {
+              id: attempt.category._id,
+              name: attempt.category.name,
+              testType: attempt.category.testType,
+            }
+          : null,
+      }));
+
+      const averageAccuracy = history.length
+        ? Number((history.reduce((total, attempt) => total + Number(attempt.accuracy || 0), 0) / history.length).toFixed(2))
+        : 0;
+
+      return {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        attemptCount: history.length,
+        averageAccuracy,
+        lastAttemptAt: history[0]?.submittedAt || null,
+        attempts: history,
+      };
+    }),
+  });
+});
+
+export const updateUserRole = asyncHandler(async (req, res) => {
+  const nextRole = String(req.body.role || "").trim();
+
+  if (!MANAGED_USER_ROLES.includes(nextRole)) {
+    res.status(400);
+    throw new Error("Role must be one of user, editor, admin, or debarred.");
+  }
+
+  const user = await User.findById(req.params.userId);
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found.");
+  }
+
+  if (String(user._id) === String(req.user._id)) {
+    res.status(400);
+    throw new Error("You cannot change your own role from this screen.");
+  }
+
+  user.role = nextRole;
+  await user.save();
+
+  res.json({
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
   });
 });
 

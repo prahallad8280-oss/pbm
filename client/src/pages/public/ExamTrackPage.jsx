@@ -5,6 +5,7 @@ import LoginForm from "../../components/auth/LoginForm.jsx";
 import RegisterForm from "../../components/auth/RegisterForm.jsx";
 import { getExamTrackBySlug } from "../../data/examTracks.js";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { getWorkspaceLabelForRole, getWorkspacePathForRole } from "../../utils/roleRoutes.js";
 
 const ExamTrackPage = () => {
   const { slug } = useParams();
@@ -80,7 +81,7 @@ const ExamTrackPage = () => {
           </Link>
 
           <nav className="site-nav">
-            {user ? <Link to={user.role === "admin" ? "/admin" : "/dashboard"}>{user.role === "admin" ? "Dashboard" : "Student Dashboard"}</Link> : null}
+            {user ? <Link to={getWorkspacePathForRole(user.role)}>{getWorkspaceLabelForRole(user.role)}</Link> : null}
             <Link to="/">Home</Link>
             <button type="button" className="site-nav-button" onClick={handleAuthAction}>
               {user ? "Logout" : "Login/Signup"}

@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext.jsx";
+import { getWorkspacePathForRole } from "../../utils/roleRoutes.js";
 
 const ProtectedRoute = ({ roles = [] }) => {
   const { authLoading, user } = useAuth();
@@ -15,11 +16,10 @@ const ProtectedRoute = ({ roles = [] }) => {
   }
 
   if (roles.length && !roles.includes(user.role)) {
-    return <Navigate to={user.role === "admin" ? "/admin" : "/dashboard"} replace />;
+    return <Navigate to={getWorkspacePathForRole(user.role)} replace />;
   }
 
   return <Outlet />;
 };
 
 export default ProtectedRoute;
-

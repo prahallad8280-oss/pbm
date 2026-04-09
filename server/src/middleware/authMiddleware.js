@@ -13,21 +13,29 @@ export const protect = asyncHandler(async (req, res, next) => {
 
   const token = authorization.split(" ")[1];
 
+  let decoded;
+
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select("-password");
-
-    if (!user) {
-      res.status(401);
-      throw new Error("User not found.");
-    }
-
-    req.user = user;
-    next();
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch (_error) {
     res.status(401);
     throw new Error("Token is invalid or expired.");
   }
+
+  const user = await User.findById(decoded.id).select("-password");
+
+  if (!user) {
+    res.status(401);
+    throw new Error("User not found.");
+  }
+
+  if (user.role === "debarred") {
+    res.status(403);
+    throw new Error("Your account has been debarred. Please contact the administrator.");
+  }
+
+  req.user = user;
+  next();
 });
 
 export const authorize = (...roles) => (req, res, next) => {
@@ -38,4 +46,3 @@ export const authorize = (...roles) => (req, res, next) => {
 
   next();
 };
-

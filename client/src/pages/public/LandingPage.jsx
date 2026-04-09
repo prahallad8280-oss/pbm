@@ -6,6 +6,7 @@ import LoginForm from "../../components/auth/LoginForm.jsx";
 import RegisterForm from "../../components/auth/RegisterForm.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { examTracks } from "../../data/examTracks.js";
+import { getWorkspaceLabelForRole, getWorkspacePathForRole } from "../../utils/roleRoutes.js";
 
 const examPointers = [
   "One portal can support preparation for CSIR NET, GATE, Odisha state-level assistant professor exams, NBHM, TIFR, and related mathematics tests.",
@@ -275,7 +276,7 @@ const LandingPage = () => {
           </Link>
 
           <nav className="site-nav">
-            {user ? <Link to={user.role === "admin" ? "/admin" : "/dashboard"}>{user.role === "admin" ? "Dashboard" : "Student Dashboard"}</Link> : null}
+            {user ? <Link to={getWorkspacePathForRole(user.role)}>{getWorkspaceLabelForRole(user.role)}</Link> : null}
             <button type="button" className="site-nav-button" onClick={handleAuthAction}>
               {user ? "Logout" : "Login/Signup"}
             </button>

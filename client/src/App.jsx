@@ -7,6 +7,7 @@ import CategoryManagerPage from "./pages/admin/CategoryManagerPage.jsx";
 import FeedbackManagerPage from "./pages/admin/FeedbackManagerPage.jsx";
 import NotificationManagerPage from "./pages/admin/NotificationManagerPage.jsx";
 import QuestionManagerPage from "./pages/admin/QuestionManagerPage.jsx";
+import UserManagerPage from "./pages/admin/UserManagerPage.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
 import ExamTrackPage from "./pages/public/ExamTrackPage.jsx";
@@ -27,7 +28,7 @@ const App = () => (
     <Route path="/open-tests/:featuredKey" element={<PublicTestAttemptPage />} />
     <Route path="/open-tests/:featuredKey/result" element={<PublicTestResultPage />} />
 
-    <Route element={<ProtectedRoute />}>
+    <Route element={<ProtectedRoute roles={["user", "admin"]} />}>
       <Route element={<AppShell />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/tests/start/:categoryId" element={<TestAttemptPage />} />
@@ -36,13 +37,19 @@ const App = () => (
       </Route>
     </Route>
 
-    <Route element={<ProtectedRoute roles={["admin"]} />}>
+    <Route element={<ProtectedRoute roles={["admin", "editor"]} />}>
       <Route element={<AppShell />}>
-        <Route path="/admin" element={<AdminDashboardPage />} />
         <Route path="/admin/questions" element={<QuestionManagerPage />} />
         <Route path="/admin/categories" element={<CategoryManagerPage />} />
         <Route path="/admin/notifications" element={<NotificationManagerPage />} />
+      </Route>
+    </Route>
+
+    <Route element={<ProtectedRoute roles={["admin"]} />}>
+      <Route element={<AppShell />}>
+        <Route path="/admin" element={<AdminDashboardPage />} />
         <Route path="/admin/feedback" element={<FeedbackManagerPage />} />
+        <Route path="/admin/users" element={<UserManagerPage />} />
       </Route>
     </Route>
 

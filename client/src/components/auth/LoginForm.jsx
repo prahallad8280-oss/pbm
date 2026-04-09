@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext.jsx";
+import { getWorkspacePathForRole } from "../../utils/roleRoutes.js";
 
 const LoginForm = ({
   showRegisterLink = true,
@@ -23,7 +24,7 @@ const LoginForm = ({
 
     try {
       const loggedInUser = await login(form);
-      const fallbackPath = loggedInUser.role === "admin" ? "/admin" : "/dashboard";
+      const fallbackPath = getWorkspacePathForRole(loggedInUser.role);
       onSuccess?.(loggedInUser);
       navigate(location.state?.from?.pathname || fallbackPath, { replace: true });
     } catch (requestError) {

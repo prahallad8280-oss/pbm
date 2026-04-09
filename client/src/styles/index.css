@@ -887,6 +887,10 @@ select {
   font-weight: 600;
 }
 
+.field-inline {
+  min-width: 190px;
+}
+
 .field input,
 .field textarea,
 .field select {
@@ -1306,6 +1310,53 @@ select {
   color: var(--muted);
 }
 
+.user-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.user-role-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.user-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.85rem 1rem;
+}
+
+.user-meta-grid p,
+.user-history-block h5,
+.history-card p {
+  margin: 0;
+}
+
+.user-history-block {
+  display: grid;
+  gap: 0.85rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid rgba(18, 38, 63, 0.08);
+}
+
+.user-history-block h5 {
+  font-size: 1rem;
+}
+
+.history-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.history-card {
+  padding: 1rem;
+  border-radius: 18px;
+  background: rgba(18, 38, 63, 0.04);
+  border: 1px solid rgba(18, 38, 63, 0.06);
+}
+
 @media (max-width: 1024px) {
   .notification-layout,
   .track-detail-layout,
@@ -1395,5 +1446,13 @@ select {
   .track-inline-item {
     grid-template-columns: 1fr;
     align-items: start;
+  }
+
+  .user-role-controls {
+    align-items: stretch;
+  }
+
+  .field-inline {
+    min-width: 100%;
   }
 }

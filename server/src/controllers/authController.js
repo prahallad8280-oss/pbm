@@ -52,6 +52,11 @@ export const loginUser = asyncHandler(async (req, res) => {
     throw new Error("Invalid email or password.");
   }
 
+  if (user.role === "debarred") {
+    res.status(403);
+    throw new Error("Your account has been debarred. Please contact the administrator.");
+  }
+
   res.json(buildAuthPayload(user));
 });
 
@@ -65,4 +70,3 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
     },
   });
 });
-
