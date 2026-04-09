@@ -1310,51 +1310,211 @@ select {
   color: var(--muted);
 }
 
-.user-card {
+.user-control-section,
+.user-directory-section {
   display: grid;
   gap: 1rem;
 }
 
-.user-role-controls {
+.user-control-note {
+  margin: 0;
+  color: #546781;
+  line-height: 1.75;
+}
+
+.role-bar-chart {
+  display: grid;
+  gap: 1rem;
+}
+
+.role-bar-row {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.role-bar-meta {
   display: flex;
-  gap: 0.75rem;
-  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.role-bar-meta span {
+  color: #243651;
+  font-weight: 600;
+}
+
+.role-bar-meta strong {
+  color: #12263f;
+  font-size: 1.05rem;
+}
+
+.role-bar-track {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(18, 38, 63, 0.08);
+  overflow: hidden;
+}
+
+.role-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+}
+
+.role-bar-fill-user {
+  background: linear-gradient(90deg, #0b6a82 0%, #1783a0 100%);
+}
+
+.role-bar-fill-editor {
+  background: linear-gradient(90deg, #d88c25 0%, #f0a94f 100%);
+}
+
+.role-bar-fill-admin {
+  background: linear-gradient(90deg, #7c2d7a 0%, #b145a8 100%);
+}
+
+.role-bar-fill-debarred {
+  background: linear-gradient(90deg, #9d151a 0%, #d24b4f 100%);
+}
+
+.user-directory-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.user-name-list {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.user-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  border: 0;
+  border-bottom: 1px solid rgba(18, 38, 63, 0.08);
+  background: transparent;
+  color: #22344d;
+  cursor: pointer;
+  text-align: left;
+}
+
+.user-name-row:hover,
+.user-name-row.active {
+  color: #0b6a82;
+}
+
+.user-name-text {
+  font-weight: 600;
+}
+
+.role-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.26rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.role-tag-user {
+  background: rgba(11, 106, 130, 0.1);
+  color: #0b6a82;
+}
+
+.role-tag-editor {
+  background: rgba(241, 156, 64, 0.18);
+  color: #b46b14;
+}
+
+.role-tag-admin {
+  background: rgba(124, 45, 122, 0.12);
+  color: #7c2d7a;
+}
+
+.role-tag-debarred {
+  background: rgba(180, 35, 24, 0.12);
+  color: #b42318;
+}
+
+.user-detail-panel {
+  display: grid;
+  gap: 1.15rem;
+  padding-left: 1.5rem;
+  border-left: 1px solid rgba(18, 38, 63, 0.08);
+}
+
+.user-detail-empty {
+  min-height: 180px;
+  align-content: start;
+}
+
+.user-detail-head,
+.user-detail-actions,
+.history-line-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
   flex-wrap: wrap;
 }
 
-.user-meta-grid {
+.user-detail-head h4,
+.history-line-title,
+.user-history-block h5,
+.user-detail-grid p {
+  margin: 0;
+}
+
+.user-detail-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0.85rem 1rem;
 }
 
-.user-meta-grid p,
-.user-history-block h5,
-.history-card p {
-  margin: 0;
-}
-
 .user-history-block {
   display: grid;
-  gap: 0.85rem;
-  padding-top: 0.25rem;
+  gap: 0.9rem;
+  padding-top: 1rem;
   border-top: 1px solid rgba(18, 38, 63, 0.08);
 }
 
-.user-history-block h5 {
-  font-size: 1rem;
+.user-history-plain .empty-state {
+  margin: 0;
 }
 
-.history-list {
+.history-line-list {
   display: grid;
   gap: 0.8rem;
 }
 
-.history-card {
-  padding: 1rem;
-  border-radius: 18px;
-  background: rgba(18, 38, 63, 0.04);
-  border: 1px solid rgba(18, 38, 63, 0.06);
+.history-line-item {
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(18, 38, 63, 0.08);
+}
+
+.history-line-title {
+  font-weight: 700;
+  color: #162439;
+}
+
+.history-line-meta,
+.history-line-time {
+  color: #5c6d86;
+}
+
+.history-line-meta {
+  margin-top: 0.2rem;
+}
+
+.history-line-time {
+  white-space: nowrap;
 }
 
 @media (max-width: 1024px) {
@@ -1448,11 +1608,23 @@ select {
     align-items: start;
   }
 
-  .user-role-controls {
-    align-items: stretch;
-  }
-
   .field-inline {
     min-width: 100%;
+  }
+
+  .user-directory-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .user-detail-panel {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid rgba(18, 38, 63, 0.08);
+    padding-top: 1.25rem;
+  }
+
+  .history-line-time {
+    white-space: normal;
   }
 }
