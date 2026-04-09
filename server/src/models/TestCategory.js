@@ -18,6 +18,16 @@ const testCategorySchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    examName: {
+      type: String,
+      default: "CSIR",
+      trim: true,
+    },
+    subjectLabel: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     testType: {
       type: String,
       enum: ["subject", "flt"],
@@ -39,6 +49,17 @@ const testCategorySchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isDemo: {
+      type: Boolean,
+      default: false,
+    },
+    demoKey: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      unique: true,
+      sparse: true,
+    },
   },
   {
     timestamps: true,
@@ -48,4 +69,3 @@ const testCategorySchema = new mongoose.Schema(
 const TestCategory = mongoose.model("TestCategory", testCategorySchema);
 
 export default TestCategory;
-

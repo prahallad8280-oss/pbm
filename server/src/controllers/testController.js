@@ -68,6 +68,16 @@ const calculateResultMetrics = (storedResponses) => {
 };
 
 const findFeaturedPublicCategory = async (featuredKey) => {
+  const explicitDemoCategory = await TestCategory.findOne({
+    isActive: true,
+    isDemo: true,
+    demoKey: String(featuredKey || "").trim().toLowerCase(),
+  }).lean();
+
+  if (explicitDemoCategory) {
+    return explicitDemoCategory;
+  }
+
   const featuredConfig = FEATURED_PUBLIC_TESTS[featuredKey];
 
   if (!featuredConfig) {
@@ -105,9 +115,13 @@ const buildPublicResult = ({ category, questionOrder, questions, responses, time
       name: category.name,
       slug: category.slug,
       description: category.description,
+      examName: category.examName,
+      subjectLabel: category.subjectLabel,
       testType: category.testType,
       durationMinutes: category.durationMinutes,
       questionCount: category.questionCount,
+      isDemo: category.isDemo,
+      demoKey: category.demoKey,
     },
     responses: storedResponses,
   };

@@ -6,10 +6,14 @@ const emptyCategory = {
   name: "",
   slug: "",
   description: "",
+  examName: "CSIR",
+  subjectLabel: "MATHEMATIC SCIENCE SET A",
   testType: "subject",
   durationMinutes: 45,
   questionCount: 10,
   isActive: true,
+  isDemo: false,
+  demoKey: "",
 };
 
 const CategoryManagerPage = () => {
@@ -78,8 +82,8 @@ const CategoryManagerPage = () => {
       <form className="form-card" onSubmit={handleSubmit}>
         <div className="form-card-header">
           <div>
-            <p className="section-tag">Test categories</p>
-            <h3>{form._id ? "Edit category" : "Create category"}</h3>
+            <p className="section-tag">Test setup</p>
+            <h3>{form._id ? "Edit test" : "Create test"}</h3>
           </div>
           {form._id ? (
             <button type="button" className="button button-ghost" onClick={resetForm}>
@@ -97,6 +101,28 @@ const CategoryManagerPage = () => {
             required
           />
         </label>
+
+        <div className="field-grid">
+          <label className="field">
+            <span>Exam name</span>
+            <input
+              type="text"
+              value={form.examName}
+              onChange={(event) => setForm((current) => ({ ...current, examName: event.target.value }))}
+              placeholder="CSIR, GATE, OPSC, NBHM"
+            />
+          </label>
+
+          <label className="field">
+            <span>Subject label</span>
+            <input
+              type="text"
+              value={form.subjectLabel}
+              onChange={(event) => setForm((current) => ({ ...current, subjectLabel: event.target.value }))}
+              placeholder="MATHEMATIC SCIENCE SET A"
+            />
+          </label>
+        </div>
 
         <label className="field">
           <span>Slug</span>
@@ -160,21 +186,48 @@ const CategoryManagerPage = () => {
             checked={form.isActive}
             onChange={(event) => setForm((current) => ({ ...current, isActive: event.target.checked }))}
           />
-          <span>Category is active</span>
+          <span>Test is active</span>
         </label>
+
+        <label className="checkbox-row">
+          <input
+            type="checkbox"
+            checked={form.isDemo}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                isDemo: event.target.checked,
+                demoKey: event.target.checked ? current.demoKey || current.slug || "" : "",
+              }))
+            }
+          />
+          <span>Make this a public demo test</span>
+        </label>
+
+        {form.isDemo ? (
+          <label className="field">
+            <span>Demo key</span>
+            <input
+              type="text"
+              value={form.demoKey}
+              onChange={(event) => setForm((current) => ({ ...current, demoKey: event.target.value }))}
+              placeholder="example: mathematics-ma-2023-june"
+            />
+          </label>
+        ) : null}
 
         {error ? <p className="form-error">{error}</p> : null}
 
         <button type="submit" className="button" disabled={saving}>
-          {saving ? "Saving..." : form._id ? "Update category" : "Create category"}
+          {saving ? "Saving..." : form._id ? "Update test" : "Create test"}
         </button>
       </form>
 
       <section className="table-card">
         <div className="section-headline">
           <div>
-            <p className="section-tag">Available categories</p>
-            <h3>Control how tests are grouped</h3>
+            <p className="section-tag">Available tests</p>
+            <h3>Control active and public-ready test sets</h3>
           </div>
         </div>
 
@@ -203,8 +256,11 @@ const CategoryManagerPage = () => {
 
                 <p>{category.description}</p>
                 <p className="muted-text">
+                  {category.examName || "Exam"} | {category.subjectLabel || category.name}
+                </p>
+                <p className="muted-text">
                   {category.durationMinutes} mins | {category.questionCount} questions | {category.questionBankSize} in
-                  bank
+                  bank | {category.isDemo ? `Demo key: ${category.demoKey}` : "Protected test"}
                 </p>
               </article>
             ))}
@@ -218,4 +274,3 @@ const CategoryManagerPage = () => {
 };
 
 export default CategoryManagerPage;
-

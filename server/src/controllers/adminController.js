@@ -357,7 +357,17 @@ export const getAdminCategories = asyncHandler(async (_req, res) => {
 });
 
 export const createCategory = asyncHandler(async (req, res) => {
-  const { name, description = "", testType, durationMinutes, questionCount, isActive = true } = req.body;
+  const {
+    name,
+    description = "",
+    examName = "CSIR",
+    subjectLabel = "",
+    testType,
+    durationMinutes,
+    questionCount,
+    isActive = true,
+    isDemo = false,
+  } = req.body;
 
   if (!name || !testType || !durationMinutes || !questionCount) {
     res.status(400);
@@ -365,6 +375,7 @@ export const createCategory = asyncHandler(async (req, res) => {
   }
 
   const slug = req.body.slug ? toSlug(req.body.slug) : toSlug(name);
+  const nextDemoKey = isDemo ? (req.body.demoKey ? toSlug(req.body.demoKey) : slug) : undefined;
   const existingCategory = await TestCategory.findOne({ slug });
 
   if (existingCategory) {
@@ -372,14 +383,27 @@ export const createCategory = asyncHandler(async (req, res) => {
     throw new Error("A category with this slug already exists.");
   }
 
+  if (nextDemoKey) {
+    const duplicateDemoKey = await TestCategory.findOne({ demoKey: nextDemoKey });
+
+    if (duplicateDemoKey) {
+      res.status(409);
+      throw new Error("Another test already uses this demo key.");
+    }
+  }
+
   const category = await TestCategory.create({
     name,
     slug,
     description,
+    examName,
+    subjectLabel: subjectLabel || name,
     testType,
     durationMinutes: Number(durationMinutes),
     questionCount: Number(questionCount),
     isActive,
+    isDemo,
+    demoKey: nextDemoKey,
   });
 
   res.status(201).json(category);
@@ -405,13 +429,36 @@ export const updateCategory = asyncHandler(async (req, res) => {
     throw new Error("Another category already uses this slug.");
   }
 
+  const nextIsDemo = req.body.isDemo ?? category.isDemo;
+  const nextDemoKey = nextIsDemo
+    ? req.body.demoKey
+      ? toSlug(req.body.demoKey)
+      : category.demoKey || nextSlug
+    : undefined;
+
+  if (nextDemoKey) {
+    const duplicateDemoKey = await TestCategory.findOne({
+      demoKey: nextDemoKey,
+      _id: { $ne: category._id },
+    });
+
+    if (duplicateDemoKey) {
+      res.status(409);
+      throw new Error("Another test already uses this demo key.");
+    }
+  }
+
   category.name = req.body.name ?? category.name;
   category.slug = nextSlug;
   category.description = req.body.description ?? category.description;
+  category.examName = req.body.examName ?? category.examName;
+  category.subjectLabel = req.body.subjectLabel ?? category.subjectLabel;
   category.testType = req.body.testType ?? category.testType;
   category.durationMinutes = Number(req.body.durationMinutes ?? category.durationMinutes);
   category.questionCount = Number(req.body.questionCount ?? category.questionCount);
   category.isActive = req.body.isActive ?? category.isActive;
+  category.isDemo = nextIsDemo;
+  category.demoKey = nextDemoKey;
 
   await category.save();
 

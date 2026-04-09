@@ -34,9 +34,13 @@ export const formatAttemptForClient = (attempt) => ({
         name: attempt.category.name,
         slug: attempt.category.slug,
         description: attempt.category.description,
+        examName: attempt.category.examName,
+        subjectLabel: attempt.category.subjectLabel,
         testType: attempt.category.testType,
         durationMinutes: attempt.category.durationMinutes,
         questionCount: attempt.category.questionCount,
+        isDemo: attempt.category.isDemo,
+        demoKey: attempt.category.demoKey,
       }
     : null,
   responses: attempt.responses.map((response) => ({
