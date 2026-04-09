@@ -3,6 +3,7 @@ import TestAttempt from "../models/TestAttempt.js";
 import TestCategory from "../models/TestCategory.js";
 import User from "../models/User.js";
 import Feedback from "../models/Feedback.js";
+import Notification from "../models/Notification.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 const toSlug = (value = "") =>
@@ -29,12 +30,14 @@ const validateQuestionPayload = ({ questionText, category, testType, options, co
 };
 
 export const getAdminOverview = asyncHandler(async (_req, res) => {
-  const [userCount, categoryCount, questionCount, attemptCount, feedbackCount, recentAttempts] = await Promise.all([
+  const [userCount, categoryCount, questionCount, attemptCount, feedbackCount, notificationCount, recentAttempts] =
+    await Promise.all([
     User.countDocuments({ role: "user" }),
     TestCategory.countDocuments(),
     Question.countDocuments(),
     TestAttempt.countDocuments({ status: "completed" }),
     Feedback.countDocuments(),
+    Notification.countDocuments({ isActive: true }),
     TestAttempt.find({ status: "completed" })
       .populate("user", "name email")
       .populate("category", "name testType")
@@ -49,6 +52,7 @@ export const getAdminOverview = asyncHandler(async (_req, res) => {
       questionCount,
       attemptCount,
       feedbackCount,
+      notificationCount,
     },
     recentAttempts: recentAttempts.map((attempt) => ({
       id: attempt._id,
@@ -71,6 +75,43 @@ export const getAdminOverview = asyncHandler(async (_req, res) => {
         : null,
     })),
   });
+});
+
+export const getAdminNotifications = asyncHandler(async (_req, res) => {
+  const notifications = await Notification.find().sort({ createdAt: -1 }).lean();
+  res.json(notifications);
+});
+
+export const createNotification = asyncHandler(async (req, res) => {
+  const label = String(req.body.label || "").trim();
+  const title = String(req.body.title || "").trim();
+  const body = String(req.body.body || "").trim();
+
+  if (!label || !title || !body) {
+    res.status(400);
+    throw new Error("Label, title, and notification text are required.");
+  }
+
+  const notification = await Notification.create({
+    label,
+    title,
+    body,
+    isActive: req.body.isActive ?? true,
+  });
+
+  res.status(201).json(notification);
+});
+
+export const deleteNotification = asyncHandler(async (req, res) => {
+  const notification = await Notification.findById(req.params.notificationId);
+
+  if (!notification) {
+    res.status(404);
+    throw new Error("Notification not found.");
+  }
+
+  await notification.deleteOne();
+  res.json({ message: "Notification deleted successfully." });
 });
 
 export const getAdminFeedback = asyncHandler(async (_req, res) => {

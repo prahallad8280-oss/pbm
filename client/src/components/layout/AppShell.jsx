@@ -11,6 +11,7 @@ const AppShell = () => {
           { to: "/admin", label: "Overview" },
           { to: "/admin/questions", label: "Questions" },
           { to: "/admin/categories", label: "Categories" },
+          { to: "/admin/notifications", label: "Notifications" },
           { to: "/admin/feedback", label: "Feedback" },
         ]
       : [

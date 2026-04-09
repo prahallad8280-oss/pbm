@@ -2,11 +2,14 @@ import express from "express";
 
 import {
   createCategory,
+  createNotification,
   createQuestion,
   deleteCategory,
+  deleteNotification,
   deleteQuestion,
   getAdminCategories,
   getAdminFeedback,
+  getAdminNotifications,
   getAdminOverview,
   getAdminQuestions,
   updateFeedbackStatus,
@@ -21,6 +24,11 @@ router.use(protect, authorize("admin"));
 
 router.get("/overview", getAdminOverview);
 router.get("/feedback", getAdminFeedback);
+router
+  .route("/notifications")
+  .get(getAdminNotifications)
+  .post(createNotification);
+router.delete("/notifications/:notificationId", deleteNotification);
 router.patch("/feedback/:feedbackId", updateFeedbackStatus);
 
 router

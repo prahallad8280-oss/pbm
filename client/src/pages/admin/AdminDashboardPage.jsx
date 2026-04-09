@@ -41,6 +41,7 @@ const AdminDashboardPage = () => {
             <StatCard label="Categories" value={overview.stats.categoryCount} hint="Subject and FLT collections" />
             <StatCard label="Questions" value={overview.stats.questionCount} hint="In the current bank" />
             <StatCard label="Completed tests" value={overview.stats.attemptCount} hint="Submitted attempts" />
+            <StatCard label="Notifications" value={overview.stats.notificationCount} hint="Visible home-page notices" />
             <StatCard label="Feedback" value={overview.stats.feedbackCount} hint="Landing-page submissions" />
           </div>
         ) : null}

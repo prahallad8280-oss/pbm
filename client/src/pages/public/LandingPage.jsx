@@ -49,24 +49,6 @@ const featuredMathFlts = [
   { year: "2025", session: "December" },
 ];
 
-const noticeItems = [
-  {
-    status: "Live",
-    title: "Mathematical Sciences MA full length mocks are active",
-    detail: "June and December session practice from 2023 to 2025 is available on the platform now.",
-  },
-  {
-    status: "Open Sample",
-    title: "2023 June sample test is available without login",
-    detail: "Visitors can try the public sample first before creating an account for protected mock series.",
-  },
-  {
-    status: "Growing",
-    title: "The portal is expanding beyond CSIR NET",
-    detail: "GATE Mathematics, Odisha Assistant Professor, NBHM PYQs, TIFR PYQs, and more tracks are being added.",
-  },
-];
-
 const normalizeText = (value = "") => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
 const LandingPage = () => {
@@ -84,6 +66,7 @@ const LandingPage = () => {
   const [feedbackError, setFeedbackError] = useState("");
   const [feedbackSuccess, setFeedbackSuccess] = useState("");
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
   const closeAuthModal = () => {
     setAuthModalClosing(true);
@@ -143,6 +126,29 @@ const LandingPage = () => {
       isMounted = false;
     };
   }, [user]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadNotifications = async () => {
+      try {
+        const { data } = await api.get("/notifications");
+        if (isMounted) {
+          setNotifications(data);
+        }
+      } catch (_error) {
+        if (isMounted) {
+          setNotifications([]);
+        }
+      }
+    };
+
+    loadNotifications();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -299,21 +305,25 @@ const LandingPage = () => {
 
         <section className="notice-board-section">
           <div className="home-shell">
-            <div className="notice-board">
-              <div className="notice-board-intro">
+            <div className="notice-strip">
+              <div className="notice-strip-copy">
                 <p className="section-tag">Notifications</p>
-                <h2>Latest platform updates and exam-track announcements.</h2>
+                <h2>Fresh updates, new papers, and mock-test announcements.</h2>
               </div>
 
-              <div className="notice-list">
-                {noticeItems.map((item) => (
-                  <article key={item.title} className="notice-item">
-                    <p className="notice-status">{item.status}</p>
-                    <h3>{item.title}</h3>
-                    <p>{item.detail}</p>
-                  </article>
-                ))}
-              </div>
+              {notifications.length ? (
+                <div className="notice-notes-grid">
+                  {notifications.map((item, index) => (
+                    <article key={item._id} className={`notice-note note-tilt-${(index % 4) + 1}`}>
+                      <p className="notice-status">{item.label}</p>
+                      <h3>{item.title}</h3>
+                      <p>{item.body}</p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="notice-empty">Admin notifications will appear here as soon as they are published.</p>
+              )}
             </div>
           </div>
         </section>
