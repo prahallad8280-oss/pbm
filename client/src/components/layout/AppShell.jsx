@@ -19,12 +19,14 @@ const AppShell = () => {
           { to: "/admin", label: "Overview" },
           { to: "/admin/users", label: "Users" },
           { to: "/admin/tests", label: "Create a Test" },
+          { to: "/admin/track-boards", label: "Track Boards" },
           { to: "/admin/notifications", label: "Notifications" },
           { to: "/admin/feedback", label: "Feedback" },
         ]
       : user?.role === "editor"
         ? [
             { to: "/admin/tests", label: "Create a Test" },
+            { to: "/admin/track-boards", label: "Track Boards" },
             { to: "/admin/notifications", label: "Notifications" },
           ]
       : [

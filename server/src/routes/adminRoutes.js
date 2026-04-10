@@ -4,18 +4,22 @@ import {
   createCategory,
   createNotification,
   createQuestion,
+  createTrackBoard,
   deleteCategory,
   deleteNotification,
   deleteQuestion,
+  deleteTrackBoard,
   getAdminCategories,
   getAdminFeedback,
   getAdminNotifications,
   getAdminOverview,
   getAdminQuestions,
+  getAdminTrackBoards,
   getAdminUsers,
   updateFeedbackStatus,
   updateCategory,
   updateQuestion,
+  updateTrackBoard,
   updateUserRole,
 } from "../controllers/adminController.js";
 import { authorize, protect } from "../middleware/authMiddleware.js";
@@ -34,6 +38,14 @@ router
   .post(authorize("admin", "editor"), createNotification);
 router.delete("/notifications/:notificationId", authorize("admin", "editor"), deleteNotification);
 router.patch("/feedback/:feedbackId", authorize("admin"), updateFeedbackStatus);
+router
+  .route("/track-boards")
+  .get(authorize("admin", "editor"), getAdminTrackBoards)
+  .post(authorize("admin", "editor"), createTrackBoard);
+router
+  .route("/track-boards/:boardId")
+  .put(authorize("admin", "editor"), updateTrackBoard)
+  .delete(authorize("admin", "editor"), deleteTrackBoard);
 
 router
   .route("/questions")

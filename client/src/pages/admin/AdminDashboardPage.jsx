@@ -26,8 +26,7 @@ const summaryLinks = [
     label: "Completed tests",
     statKey: "attemptCount",
     description: "Submitted attempts across users.",
-    to: "#recent-activity-section",
-    isLocal: true,
+    to: "/admin/users",
   },
   {
     label: "Notifications",
@@ -80,53 +79,17 @@ const AdminDashboardPage = () => {
 
       {overview ? (
         <section className="metric-strip">
-          {summaryLinks.map((item) =>
-            item.isLocal ? (
-              <a key={item.label} className="metric-item metric-link-item" href={item.to}>
-                <span>{item.label}</span>
-                <strong>{overview.stats[item.statKey]}</strong>
-                <p>{item.description}</p>
-              </a>
-            ) : (
-              <Link key={item.label} className="metric-item metric-link-item" to={item.to}>
-                <span>{item.label}</span>
-                <strong>{overview.stats[item.statKey]}</strong>
-                <p>{item.description}</p>
-              </Link>
-            ),
-          )}
+          {summaryLinks.map((item) => (
+            <Link key={item.label} className="metric-item metric-link-item" to={item.to}>
+              <span>{item.label}</span>
+              <strong>{overview.stats[item.statKey]}</strong>
+              <p>{item.description}</p>
+            </Link>
+          ))}
         </section>
       ) : null}
 
       {error ? <p className="form-error">{error}</p> : null}
-
-      <section id="recent-activity-section" className="workspace-section">
-        <div className="section-headline">
-          <div>
-            <p className="section-tag">Recent activity</p>
-            <h3>Latest completed attempts</h3>
-          </div>
-        </div>
-
-        {overview?.recentAttempts?.length ? (
-          <div className="activity-line-list">
-            {overview.recentAttempts.map((attempt) => (
-              <article key={attempt.id} className="activity-line-item">
-                <div>
-                  <p className="activity-line-title">{attempt.user?.name}</p>
-                  <p className="activity-line-copy">
-                    {attempt.category?.name} | Score {attempt.score} | Accuracy {attempt.accuracy}%
-                  </p>
-                </div>
-
-                <span className="activity-line-time">{new Date(attempt.submittedAt).toLocaleString()}</span>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="empty-state">No completed attempts yet.</p>
-        )}
-      </section>
     </div>
   );
 };

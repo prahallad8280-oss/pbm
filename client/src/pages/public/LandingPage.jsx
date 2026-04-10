@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import api from "../../api/client.js";
@@ -14,17 +14,27 @@ const examPointers = [
   "Preparation improves faster when every exam track still follows the same cycle of practice, review, and correction.",
 ];
 
-const featuredMathFlts = [
-  { year: "2023", session: "June", isOpenSample: true, featuredKey: "mathematics-ma-2023-june" },
-  { year: "2023", session: "December" },
-  { year: "2024", session: "June" },
-  { year: "2024", session: "December" },
-  { year: "2025", session: "June" },
-  { year: "2025", session: "December" },
-];
-
-const normalizeText = (value = "") => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 const isExternalLink = (value = "") => /^https?:\/\//i.test(value);
+const newsItemsPerPage = 4;
+
+const formatNotificationDate = (value) => {
+  const date = value ? new Date(value) : null;
+
+  if (!date || Number.isNaN(date.getTime())) {
+    return { day: "--", monthYear: "UPDATE" };
+  }
+
+  return {
+    day: String(date.getDate()),
+    monthYear: date
+      .toLocaleDateString("en-IN", {
+        month: "short",
+        year: "2-digit",
+      })
+      .replace(" ", " ")
+      .toUpperCase(),
+  };
+};
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -32,7 +42,6 @@ const LandingPage = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalClosing, setAuthModalClosing] = useState(false);
   const [authMode, setAuthMode] = useState("login");
-  const [fullLengthCategories, setFullLengthCategories] = useState([]);
   const [feedbackForm, setFeedbackForm] = useState({
     name: "",
     email: "",
@@ -42,6 +51,21 @@ const LandingPage = () => {
   const [feedbackSuccess, setFeedbackSuccess] = useState("");
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [newsPage, setNewsPage] = useState(0);
+
+  const notificationPages = useMemo(() => {
+    if (!notifications.length) {
+      return [[]];
+    }
+
+    const pages = [];
+    for (let index = 0; index < notifications.length; index += newsItemsPerPage) {
+      pages.push(notifications.slice(index, index + newsItemsPerPage));
+    }
+    return pages;
+  }, [notifications]);
+
+  const currentNotificationPage = notificationPages[newsPage] || [];
 
   const closeAuthModal = () => {
     setAuthModalClosing(true);
@@ -75,34 +99,6 @@ const LandingPage = () => {
   }, [authModalOpen]);
 
   useEffect(() => {
-    if (!user) {
-      setFullLengthCategories([]);
-      return undefined;
-    }
-
-    let isMounted = true;
-
-    const loadFullLengthCategories = async () => {
-      try {
-        const { data } = await api.get("/categories", { params: { testType: "flt" } });
-        if (isMounted) {
-          setFullLengthCategories(data);
-        }
-      } catch (_error) {
-        if (isMounted) {
-          setFullLengthCategories([]);
-        }
-      }
-    };
-
-    loadFullLengthCategories();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [user]);
-
-  useEffect(() => {
     let isMounted = true;
 
     const loadNotifications = async () => {
@@ -126,6 +122,12 @@ const LandingPage = () => {
   }, []);
 
   useEffect(() => {
+    if (newsPage >= notificationPages.length) {
+      setNewsPage(0);
+    }
+  }, [newsPage, notificationPages.length]);
+
+  useEffect(() => {
     if (!user) {
       return;
     }
@@ -136,30 +138,6 @@ const LandingPage = () => {
       email: current.email || user.email || "",
     }));
   }, [user]);
-
-  const handleFeaturedMockAccess = (year, session) => {
-    if (!user) {
-      setAuthMode("login");
-      setAuthModalOpen(true);
-      return;
-    }
-
-    const matchedCategory = fullLengthCategories.find((category) => {
-      const haystack = normalizeText(`${category.name} ${category.slug} ${category.description}`);
-      return (
-        haystack.includes("math") &&
-        haystack.includes(year) &&
-        haystack.includes(normalizeText(session))
-      );
-    });
-
-    if (matchedCategory?._id) {
-      navigate(`/tests/start/${matchedCategory._id}`);
-      return;
-    }
-
-    navigate("/dashboard");
-  };
 
   const handleExamTrackAccess = (href) => {
     const target = String(href || "").trim();
@@ -175,17 +153,6 @@ const LandingPage = () => {
 
     navigate(target);
   };
-
-  const handleExploreMore = () => {
-    if (!user) {
-      setAuthMode("login");
-      setAuthModalOpen(true);
-      return;
-    }
-
-    navigate("/dashboard");
-  };
-
   const handleAuthAction = () => {
     if (user) {
       logout();
@@ -288,118 +255,110 @@ const LandingPage = () => {
 
       <main className="home-main">
         <section className="landing-hero">
-          <div className="home-shell">
-            <div className="landing-hero-copy">
-              <p className="section-tag">Competitive mathematics preparation portal</p>
-              <h1>Mock tests, PYQs, and structured practice for CSIR NET, GATE, Odisha exams, NBHM, TIFR, and more</h1>
-              <p className="landing-summary">
-                Prepare from one place with full length mocks, topic-wise practice, PYQ-oriented preparation, and
-                clear post-test analysis across multiple mathematics exam tracks.
-              </p>
+          <div className="home-shell landing-hero-layout">
+            <div className="landing-hero-feature">
+              <div className="landing-hero-copy">
+                <p className="section-tag">Competitive mathematics preparation portal</p>
+                <h1>Mock tests, PYQs, and structured practice for CSIR NET, GATE, Odisha exams, NBHM, TIFR, and more</h1>
+                <p className="landing-summary">
+                  Prepare from one place with full length mocks, topic-wise practice, PYQ-oriented preparation, and
+                  clear post-test analysis across multiple mathematics exam tracks.
+                </p>
 
-              <div className="landing-actions">
-                <a href="#exam-info" className="button button-secondary">
-                  Explore Platform
-                </a>
+                <p className="landing-hero-note">One preparation space for mock tests, PYQs, and exam-wise updates.</p>
               </div>
             </div>
+
+            <aside className="hero-news-feed">
+              <div className="hero-news-header">
+                <button
+                  type="button"
+                  className="hero-news-nav"
+                  onClick={() =>
+                    setNewsPage((current) => (current === 0 ? notificationPages.length - 1 : current - 1))
+                  }
+                  aria-label="Previous news items"
+                >
+                  &#8249;
+                </button>
+
+                <h3>News Feed</h3>
+
+                <button
+                  type="button"
+                  className="hero-news-nav"
+                  onClick={() => setNewsPage((current) => (current + 1) % notificationPages.length)}
+                  aria-label="Next news items"
+                >
+                  &#8250;
+                </button>
+              </div>
+
+              {currentNotificationPage.length ? (
+                <div className="hero-news-list">
+                  {currentNotificationPage.map((item) => {
+                    const { day, monthYear } = formatNotificationDate(item.createdAt);
+
+                    return (
+                      <button
+                        key={item._id}
+                        type="button"
+                        className="hero-news-item"
+                        onClick={() => handleNotificationClick(item.link)}
+                      >
+                        <div className="hero-news-date">
+                          <strong>{day}</strong>
+                          <span>{monthYear}</span>
+                        </div>
+
+                        <p className="hero-news-title">{item.title}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="hero-news-empty">
+                  <p>No notifications have been published yet.</p>
+                </div>
+              )}
+
+              {notificationPages.length > 1 ? (
+                <div className="hero-news-dots" aria-label="News feed pages">
+                  {notificationPages.map((_, index) => (
+                    <button
+                      key={`news-page-${index}`}
+                      type="button"
+                      className={`hero-news-dot ${index === newsPage ? "active" : ""}`}
+                      onClick={() => setNewsPage(index)}
+                      aria-label={`Open news page ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              ) : null}
+            </aside>
           </div>
         </section>
 
         <section className="notice-board-section">
           <div className="home-shell">
-            <div className="notification-layout">
-              <div className="notification-copy">
-                <div className="track-inline-list">
-                  <p className="section-tag">Exam tracks</p>
-                  {examTracks.map((track) => (
-                    <div key={track.title} className="track-inline-item">
-                      <div>
-                        <h3>{track.title}</h3>
-                        <p>{track.description}</p>
-                      </div>
-                      <button type="button" className="track-inline-link" onClick={() => handleExamTrackAccess(track.href)}>
-                        click here
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <aside className="notification-panel">
-                <h3>Latest notices</h3>
-
-                {notifications.length ? (
-                  <ul className="notification-list">
-                    {notifications.map((item) => (
-                      <li key={item._id} className="notification-list-item">
-                        <p className="notification-label">{item.label}</p>
-                        <p className="notification-title">{item.title}</p>
-                        <p className="notification-body">{item.body}</p>
-                        {item.link ? (
-                          <button
-                            type="button"
-                            className="notification-link"
-                            onClick={() => handleNotificationClick(item.link)}
-                          >
-                            Open update
-                          </button>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="notification-empty">Admin notifications will appear here as soon as they are published.</p>
-                )}
-              </aside>
-            </div>
-          </div>
-        </section>
-
-        <section className="featured-tests-section">
-          <div className="home-shell">
             <div className="section-heading">
               <div>
-                <p className="section-tag">Featured mathematics series</p>
-                <h2>Current full length mock tests for Mathematical Sciences MA from 2023 to 2025.</h2>
+                <p className="section-tag">Exam tracks</p>
+                <h2>Choose the exam track you want to enter.</h2>
               </div>
             </div>
 
-            <div className="featured-tests-grid">
-              {featuredMathFlts.map((item) => (
-                <article key={`${item.year}-${item.session}`} className="featured-test-card">
-                  <p className="featured-test-year">{item.year}</p>
-                  <h3>{item.session} Full Length Mock Test</h3>
-                  <p>
-                    {item.isOpenSample
-                      ? "Mathematical Sciences MA open sample test. No login is required for this one."
-                      : "Mathematical Sciences MA full length practice set with protected access."}
-                  </p>
-                  {item.isOpenSample ? (
-                    <button
-                      type="button"
-                      className="button"
-                      onClick={() => navigate(`/open-tests/${item.featuredKey}`)}
-                    >
-                      Start now
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="button"
-                      onClick={() => handleFeaturedMockAccess(item.year, item.session)}
-                    >
-                      {user ? "Access mock test" : "Login to access"}
-                    </button>
-                  )}
-                </article>
+            <div className="exam-track-tile-grid">
+              {examTracks.map((track, index) => (
+                <button
+                  key={track.title}
+                  type="button"
+                  className={`exam-track-tile exam-track-tile-${(index % 5) + 1}`}
+                  onClick={() => handleExamTrackAccess(track.href)}
+                >
+                  {track.title}
+                </button>
               ))}
-            </div>
-
-            <div className="featured-tests-actions">
-              <button type="button" className="button button-secondary" onClick={handleExploreMore}>
-                Explore more
-              </button>
             </div>
           </div>
         </section>

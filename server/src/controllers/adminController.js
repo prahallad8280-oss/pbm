@@ -5,6 +5,12 @@ import User from "../models/User.js";
 import Feedback from "../models/Feedback.js";
 import Notification from "../models/Notification.js";
 import asyncHandler from "../utils/asyncHandler.js";
+export {
+  getAdminTrackBoards,
+  createTrackBoard,
+  updateTrackBoard,
+  deleteTrackBoard,
+} from "./trackBoardController.js";
 
 const MANAGED_USER_ROLES = ["user", "editor", "admin", "debarred"];
 

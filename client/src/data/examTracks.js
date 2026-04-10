@@ -1,3 +1,209 @@
+const csirNetDeepDive = {
+  overview: [
+    "The CSIR-UGC National Eligibility Test (NET) is a national-level examination in India that assesses candidates for Junior Research Fellowship (JRF) and Lectureship / Assistant Professor eligibility.",
+    "It is conducted for various science disciplines, including Mathematical Sciences, and serves as a gateway to research and academic careers.",
+  ],
+  whyChoose: [
+    "Qualify for Ph.D. programs in top institutes such as IITs, IISc, and ISI.",
+    "Receive a monthly fellowship up to Rs. 37,000 during research.",
+    "Build a career in higher education as an Assistant Professor.",
+    "Prepare for research organizations such as DRDO, ISRO, and BARC.",
+    "Advance toward research and specialization in mathematical sciences.",
+  ],
+  examStructure: {
+    duration: "3 Hours",
+    notes: ["Negative marking applicable"],
+    rows: [
+      {
+        section: "Part A",
+        nature: "General Aptitude",
+        attempt: "15 / 20",
+        marks: "30",
+      },
+      {
+        section: "Part B",
+        nature: "Concept-based Mathematics",
+        attempt: "25 / 40",
+        marks: "75",
+      },
+      {
+        section: "Part C",
+        nature: "Advanced Analytical Problems",
+        attempt: "20 / 60",
+        marks: "95",
+      },
+      {
+        section: "Total",
+        nature: "",
+        attempt: "",
+        marks: "200 Marks",
+      },
+    ],
+  },
+  syllabusIntro:
+    "The syllabus is structured into core mathematical units, as defined in the official CSIR document.",
+  syllabusUnits: [
+    {
+      title: "Unit I: Analysis & Linear Algebra",
+      groups: [
+        {
+          label: "Analysis",
+          items: [
+            "Set theory (finite, countable, uncountable sets)",
+            "Real number system and completeness",
+            "Sequences, series, and convergence concepts including limsup and liminf",
+            "Theorems such as Bolzano-Weierstrass and Heine-Borel",
+            "Continuity, differentiability, and mean value theorem",
+            "Riemann and improper integrals",
+            "Functions of several variables",
+            "Metric spaces, compactness, and connectedness",
+            "Lebesgue measure and integration basics",
+          ],
+        },
+        {
+          label: "Linear Algebra",
+          items: [
+            "Vector spaces, basis, and dimension",
+            "Linear transformations and matrix theory",
+            "Eigenvalues, eigenvectors, and Cayley-Hamilton theorem",
+            "Canonical forms including Jordan form and diagonalization",
+            "Inner product spaces and orthonormalization",
+            "Quadratic forms and classification",
+          ],
+        },
+      ],
+    },
+    {
+      title: "Unit II: Complex Analysis, Algebra & Topology",
+      groups: [
+        {
+          label: "Complex Analysis",
+          items: [
+            "Complex numbers and functions",
+            "Analytic functions and Cauchy-Riemann equations",
+            "Contour integration and major theorems",
+            "Taylor and Laurent series",
+            "Residue theory",
+            "Conformal mappings and Mobius transformations",
+          ],
+        },
+        {
+          label: "Algebra",
+          items: [
+            "Number theory basics including divisibility and congruences",
+            "Group theory including subgroups, homomorphisms, and Sylow theorems",
+            "Ring theory including ideals and quotient rings",
+            "Fields and Galois theory",
+            "Polynomial rings and irreducibility",
+          ],
+        },
+        {
+          label: "Topology",
+          items: [
+            "Basis, subspace, and product topology",
+            "Dense sets and separation axioms",
+            "Compactness and connectedness",
+          ],
+        },
+      ],
+    },
+    {
+      title: "Unit III: Differential Equations & Applied Mathematics",
+      groups: [
+        {
+          label: "Ordinary Differential Equations (ODEs)",
+          items: [
+            "Existence and uniqueness theorems",
+            "Systems of ODEs",
+            "Linear ODEs and boundary value problems",
+            "Sturm-Liouville theory and Green's functions",
+          ],
+        },
+        {
+          label: "Partial Differential Equations (PDEs)",
+          items: [
+            "First-order PDE methods such as Lagrange and Charpit",
+            "Classification of second-order PDEs",
+            "Heat, wave, and Laplace equations",
+          ],
+        },
+        {
+          label: "Numerical Analysis",
+          items: [
+            "Root-finding methods including Newton-Raphson and iteration",
+            "Linear systems and Gauss methods",
+            "Interpolation techniques",
+            "Numerical integration and ODE solvers",
+          ],
+        },
+        {
+          label: "Calculus of Variations",
+          items: [
+            "Functionals and Euler-Lagrange equations",
+            "Optimization problems with constraints",
+          ],
+        },
+        {
+          label: "Integral Equations",
+          items: [
+            "Fredholm and Volterra equations",
+            "Eigenvalue problems and kernels",
+          ],
+        },
+        {
+          label: "Classical Mechanics",
+          items: [
+            "Lagrangian and Hamiltonian formulations",
+            "Motion of rigid bodies",
+            "Oscillation theory",
+          ],
+        },
+      ],
+    },
+    {
+      title: "Unit IV: Probability & Statistics",
+      groups: [
+        {
+          label: "Probability & Statistics",
+          items: [
+            "Probability theory and random variables",
+            "Distributions and expectations",
+            "Laws of large numbers and central limit theorem",
+            "Markov chains and stochastic processes",
+            "Estimation theory and hypothesis testing",
+            "Regression and ANOVA",
+            "Multivariate statistics",
+            "Sampling techniques and design of experiments",
+            "Linear programming and queuing models",
+          ],
+        },
+      ],
+    },
+  ],
+  whoShouldPrepare: [
+    "M.Sc. or Integrated M.Sc. students in Mathematics or Applied Mathematics",
+    "Aspirants targeting Ph.D. or research careers",
+    "Candidates preparing for ISI or IIT fellowships",
+    "Students aiming for government research roles",
+  ],
+  eligibility: {
+    educationTitle: "Educational Qualification",
+    education: [
+      "M.Sc. or equivalent with 55% marks for the General category",
+      "M.Sc. or equivalent with 50% marks for reserved categories",
+    ],
+    ageTitle: "Age Limit",
+    age: [
+      "JRF: Up to 28 years, with applicable relaxation",
+      "Lectureship / Assistant Professor: No upper age limit",
+    ],
+  },
+  importantNotes: [
+    "Questions in the exam are distributed across units, with strong emphasis on Unit I (Analysis & Linear Algebra).",
+    "Mathematics candidates are expected to focus primarily on Units I, II, and III, while Unit IV is more relevant for statistics-oriented candidates.",
+  ],
+};
+
 export const examTracks = [
   {
     slug: "csir-net",
@@ -6,10 +212,10 @@ export const examTracks = [
     href: "/exam-tracks/csir-net",
     eyebrow: "Lectureship and JRF track",
     intro:
-      "This track is meant for learners preparing for CSIR NET Mathematical Sciences with a steady mix of revision, timed problem solving, and exam-oriented mock analysis.",
+      "The CSIR-UGC National Eligibility Test (NET) for Mathematical Sciences is a national-level exam that opens the route to Junior Research Fellowship, Assistant Professor eligibility, and research-focused academic careers.",
     details: [
-      "Use this page as the public entry point for CSIR-focused preparation updates, upcoming mock releases, and new topic-wise test additions.",
-      "You can later connect this track to dedicated mock series, PYQs, notices, and protected learner flows without changing the public structure.",
+      "The exam serves as a major gateway for candidates who want to move into research, higher education, and advanced mathematics-based academic work.",
+      "For Mathematical Sciences aspirants, strong conceptual preparation, disciplined revision, and consistent mock practice are central to doing well in the exam.",
     ],
     highlights: [
       "Subject-wise mathematics practice",
@@ -21,6 +227,7 @@ export const examTracks = [
       "Future PYQ collections for CSIR pattern practice",
       "Announcements for new mock releases",
     ],
+    deepDive: csirNetDeepDive,
   },
   {
     slug: "gate-mathematics",
@@ -117,4 +324,3 @@ export const examTracks = [
 ];
 
 export const getExamTrackBySlug = (slug = "") => examTracks.find((track) => track.slug === slug);
-
