@@ -5,9 +5,26 @@ const emptyQuestion = {
   questionImage: "",
   category: "",
   testType: "subject",
+  sectionKey: "",
+  questionFormat: "mcq",
   options: ["", "", "", ""],
-  correctAnswer: 0,
+  correctAnswers: [0],
   explanation: "",
+};
+
+const normalizeAnswers = (values = {}) => {
+  const rawAnswers =
+    Array.isArray(values.correctAnswers) && values.correctAnswers.length
+      ? values.correctAnswers
+      : values.correctAnswer === null || values.correctAnswer === undefined
+        ? []
+        : [values.correctAnswer];
+
+  const answers = [...new Set(rawAnswers.map((value) => Number(value)).filter((value) => value >= 0 && value <= 3))].sort(
+    (left, right) => left - right,
+  );
+
+  return answers.length ? answers : [0];
 };
 
 const buildFormState = (values, defaults = {}) =>
@@ -18,13 +35,16 @@ const buildFormState = (values, defaults = {}) =>
         ...values,
         category: values.category?._id || values.category || "",
         testType: values.testType || values.category?.testType || defaults.testType || "subject",
+        sectionKey: values.sectionKey || defaults.sectionKey || "",
+        questionFormat: values.questionFormat || defaults.questionFormat || "mcq",
         options: Array.isArray(values.options) ? [...values.options] : ["", "", "", ""],
-        correctAnswer: Number(values.correctAnswer ?? 0),
+        correctAnswers: normalizeAnswers(values),
       }
     : {
         ...emptyQuestion,
         ...defaults,
         options: [...emptyQuestion.options],
+        correctAnswers: normalizeAnswers(defaults),
       };
 
 const QuestionForm = ({
@@ -35,24 +55,41 @@ const QuestionForm = ({
   submitting,
   defaultCategoryId = "",
   defaultTestType = "subject",
+  availableSections = [],
   hideCategoryField = false,
   fixedCategoryName = "",
   fixedCategoryMeta = "",
   eyebrow = "Question bank",
   title,
+  resetSignal = 0,
 }) => {
   const defaults = useMemo(
     () => ({
       category: defaultCategoryId,
       testType: defaultTestType,
+      sectionKey: availableSections[0]?.key || "",
+      questionFormat: availableSections[0]?.questionType || "mcq",
     }),
-    [defaultCategoryId, defaultTestType],
+    [defaultCategoryId, defaultTestType, availableSections],
   );
   const [form, setForm] = useState(buildFormState(initialValues, defaults));
 
+  const currentSections = useMemo(() => {
+    if (hideCategoryField) {
+      return availableSections;
+    }
+
+    const selectedCategory = categories.find((category) => category._id === form.category);
+    return selectedCategory?.sections?.length
+      ? selectedCategory.sections
+      : availableSections;
+  }, [availableSections, categories, form.category, hideCategoryField]);
+
+  const currentSection = currentSections.find((section) => section.key === form.sectionKey) || currentSections[0] || null;
+
   useEffect(() => {
     setForm(buildFormState(initialValues, defaults));
-  }, [initialValues, defaults]);
+  }, [initialValues, defaults, resetSignal]);
 
   const handleOptionChange = (index, value) => {
     setForm((current) => ({
@@ -63,21 +100,72 @@ const QuestionForm = ({
 
   const handleCategoryChange = (categoryId) => {
     const selectedCategory = categories.find((category) => category._id === categoryId);
+    const nextSections = selectedCategory?.sections?.length ? selectedCategory.sections : [];
+    const nextSection = nextSections[0] || null;
 
     setForm((current) => ({
       ...current,
       category: categoryId,
       testType: selectedCategory?.testType || current.testType,
+      sectionKey: nextSection?.key || "",
+      questionFormat: nextSection?.questionType || current.questionFormat,
     }));
+  };
+
+  const handleSectionChange = (nextSectionKey) => {
+    const matchedSection = currentSections.find((section) => section.key === nextSectionKey);
+
+    setForm((current) => ({
+      ...current,
+      sectionKey: nextSectionKey,
+      questionFormat: matchedSection?.questionType || current.questionFormat,
+      correctAnswers:
+        (matchedSection?.questionType || current.questionFormat) === "mcq"
+          ? [current.correctAnswers[0] ?? 0]
+          : current.correctAnswers,
+    }));
+  };
+
+  const handleQuestionFormatChange = (nextQuestionFormat) => {
+    setForm((current) => ({
+      ...current,
+      questionFormat: nextQuestionFormat,
+      correctAnswers: nextQuestionFormat === "mcq" ? [current.correctAnswers[0] ?? 0] : current.correctAnswers,
+    }));
+  };
+
+  const handleCorrectAnswerToggle = (optionIndex) => {
+    setForm((current) => {
+      if (current.questionFormat === "mcq") {
+        return {
+          ...current,
+          correctAnswers: [optionIndex],
+        };
+      }
+
+      const alreadySelected = current.correctAnswers.includes(optionIndex);
+      const nextAnswers = alreadySelected
+        ? current.correctAnswers.filter((value) => value !== optionIndex)
+        : [...current.correctAnswers, optionIndex].sort((left, right) => left - right);
+
+      return {
+        ...current,
+        correctAnswers: nextAnswers.length ? nextAnswers : current.correctAnswers,
+      };
+    });
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    onSubmit(form);
+    onSubmit({
+      ...form,
+      correctAnswers: form.correctAnswers,
+      correctAnswer: form.correctAnswers[0] ?? 0,
+    });
   };
 
   return (
-    <form className="form-card" onSubmit={handleSubmit}>
+    <form className="form-card" onSubmit={handleSubmit} autoComplete="off">
       <div className="form-card-header">
         <div>
           <p className="section-tag">{eyebrow}</p>
@@ -89,6 +177,8 @@ const QuestionForm = ({
           </button>
         ) : null}
       </div>
+
+      <p className="field-hint">LaTeX is supported here. Use <code>\(...\)</code> for inline math or <code>$$...$$</code> for display equations.</p>
 
       <label className="field">
         <span>Question text</span>
@@ -146,6 +236,40 @@ const QuestionForm = ({
         </label>
       </div>
 
+      <div className="field-grid">
+        <label className="field">
+          <span>Section</span>
+          <select value={form.sectionKey} onChange={(event) => handleSectionChange(event.target.value)} required>
+            <option value="">Select section</option>
+            {currentSections.map((section) => (
+              <option key={section.key} value={section.key}>
+                {section.title}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="field">
+          <span>Question type</span>
+          <select
+            value={form.questionFormat}
+            onChange={(event) => handleQuestionFormatChange(event.target.value)}
+            disabled={Boolean(currentSection)}
+            required
+          >
+            <option value="mcq">MCQ</option>
+            <option value="msq">MSQ</option>
+          </select>
+        </label>
+      </div>
+
+      {currentSection ? (
+        <p className="field-hint">
+          {currentSection.title}: {currentSection.questionType.toUpperCase()} | attempt {currentSection.attemptLimit}/
+          {currentSection.questionCount} | {currentSection.marksPerQuestion} marks per question
+        </p>
+      ) : null}
+
       {form.options.map((option, index) => (
         <label key={`option-${index}`} className="field">
           <span>Option {index + 1}</span>
@@ -158,27 +282,30 @@ const QuestionForm = ({
         </label>
       ))}
 
-      <label className="field">
-        <span>Correct answer</span>
-        <select
-          value={form.correctAnswer}
-          onChange={(event) => setForm((current) => ({ ...current, correctAnswer: Number(event.target.value) }))}
-          required
-        >
-          <option value={0}>Option 1</option>
-          <option value={1}>Option 2</option>
-          <option value={2}>Option 3</option>
-          <option value={3}>Option 4</option>
-        </select>
-      </label>
+      <fieldset className="field">
+        <span>Correct answer{form.questionFormat === "msq" ? "s" : ""}</span>
+        <div className="inline-choice-row">
+          {form.options.map((option, index) => (
+            <label key={`correct-option-${index}`} className="checkbox-row">
+              <input
+                type={form.questionFormat === "msq" ? "checkbox" : "radio"}
+                name="correct-answer"
+                checked={form.correctAnswers.includes(index)}
+                onChange={() => handleCorrectAnswerToggle(index)}
+              />
+              <span>Option {index + 1}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <label className="field">
-        <span>Explanation</span>
+        <span>Explanation (optional)</span>
         <textarea
           rows="4"
           value={form.explanation}
           onChange={(event) => setForm((current) => ({ ...current, explanation: event.target.value }))}
-          required
+          placeholder="Optional solution or hint"
         />
       </label>
 

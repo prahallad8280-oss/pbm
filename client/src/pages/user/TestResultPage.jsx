@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 
 import api from "../../api/client.js";
+import MathText from "../../components/common/MathText.jsx";
 
 const optionLabels = ["A", "B", "C", "D"];
+const formatAnswerLabels = (answers = []) =>
+  Array.isArray(answers) && answers.length ? answers.map((value) => optionLabels[value]).join(", ") : "Not answered";
 
 const formatDuration = (seconds = 0) => {
   const minutes = Math.floor(seconds / 60);
@@ -59,21 +62,60 @@ const TestResultPage = () => {
         <article className="metric-item">
           <span>Score</span>
           <strong>
-            {result.score}/{result.totalQuestions}
+            {result.score}/{result.totalMarks}
           </strong>
-          <p>1 mark per correct answer.</p>
+          <p>Marks earned against the total attemptable marks.</p>
         </article>
         <article className="metric-item">
           <span>Accuracy</span>
           <strong>{result.accuracy}%</strong>
-          <p>Correct answers percentage.</p>
+          <p>Correct answers out of attempted questions.</p>
         </article>
         <article className="metric-item">
-          <span>Incorrect</span>
-          <strong>{result.incorrectCount}</strong>
-          <p>Questions answered incorrectly or skipped.</p>
+          <span>Attempted</span>
+          <strong>
+            {result.attemptedCount}/{result.category?.attemptableCount || result.totalQuestions}
+          </strong>
+          <p>Attempted questions against the allowed limit.</p>
+        </article>
+        <article className="metric-item">
+          <span>Unanswered</span>
+          <strong>{result.unansweredCount}</strong>
+          <p>Questions left unanswered.</p>
         </article>
       </section>
+
+      {result.sectionSummaries?.length ? (
+        <section className="workspace-section">
+          <div className="section-headline">
+            <div>
+              <p className="section-tag">Section summary</p>
+              <h3>Part-wise score and attempt usage.</h3>
+            </div>
+          </div>
+
+          <div className="test-line-list">
+            {result.sectionSummaries.map((section) => (
+              <article key={section.key} className="test-line-item">
+                <div>
+                  <p className={`pill ${section.questionType === "msq" ? "pill-alt" : ""}`}>
+                    {section.questionType.toUpperCase()}
+                  </p>
+                  <h4>{section.title}</h4>
+                  <p className="test-line-meta">
+                    Attempt {section.attemptedCount}/{section.attemptLimit} | Correct {section.correctCount} | Incorrect{" "}
+                    {section.incorrectCount} | Unanswered {section.unansweredCount}
+                  </p>
+                </div>
+
+                <p className="workspace-meta">
+                  {section.score}/{section.totalMarks} marks
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="workspace-section">
         <div className="section-headline">
@@ -96,7 +138,13 @@ const TestResultPage = () => {
                 </span>
               </div>
 
-              <h4>{response.questionText}</h4>
+              <h4>
+                <MathText inline text={response.questionText} />
+              </h4>
+              <p className="workspace-meta">
+                {response.sectionTitle} | {String(response.questionFormat || "mcq").toUpperCase()} |{" "}
+                {response.marksPerQuestion} marks
+              </p>
 
               {response.questionImage ? (
                 <div className="review-question-image-wrap">
@@ -113,26 +161,28 @@ const TestResultPage = () => {
                   <div
                     key={`${response.questionId}-option-${optionIndex}`}
                     className={`review-option ${
-                      optionIndex === response.correctAnswer ? "is-correct" : ""
-                    } ${optionIndex === response.selectedAnswer ? "is-selected" : ""}`}
+                      response.correctAnswers?.includes(optionIndex) ? "is-correct" : ""
+                    } ${response.selectedAnswers?.includes(optionIndex) ? "is-selected" : ""}`}
                   >
-                    <strong>{optionLabels[optionIndex]}.</strong> {option}
+                    <strong>{optionLabels[optionIndex]}.</strong> <MathText inline text={option} />
                   </div>
                 ))}
               </div>
 
               <p>
-                <strong>Your answer:</strong>{" "}
-                {response.selectedAnswer === null || response.selectedAnswer === undefined
-                  ? "Not answered"
-                  : optionLabels[response.selectedAnswer]}
+                <strong>Your answer:</strong> {formatAnswerLabels(response.selectedAnswers)}
               </p>
               <p>
-                <strong>Correct answer:</strong> {optionLabels[response.correctAnswer]}
+                <strong>Correct answer:</strong> {formatAnswerLabels(response.correctAnswers)}
               </p>
-              <p className="solution-text">
-                <strong>Explanation:</strong> {response.explanation}
+              <p>
+                <strong>Marks awarded:</strong> {response.marksAwarded}/{response.marksPerQuestion}
               </p>
+              {String(response.explanation || "").trim() ? (
+                <p className="solution-text">
+                  <strong>Explanation:</strong> <MathText inline text={response.explanation} />
+                </p>
+              ) : null}
             </article>
           ))}
         </div>

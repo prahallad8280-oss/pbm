@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../api/client.js";
 import LoginForm from "../../components/auth/LoginForm.jsx";
 import RegisterForm from "../../components/auth/RegisterForm.jsx";
+import MathText from "../../components/common/MathText.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { examTracks } from "../../data/examTracks.js";
 import { getWorkspaceLabelForRole, getWorkspacePathForRole } from "../../utils/roleRoutes.js";
@@ -311,7 +312,7 @@ const LandingPage = () => {
                           <span>{monthYear}</span>
                         </div>
 
-                        <p className="hero-news-title">{item.title}</p>
+                        <MathText className="hero-news-title" text={item.title} />
                       </button>
                     );
                   })}

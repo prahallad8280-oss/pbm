@@ -5,6 +5,13 @@ import User from "../models/User.js";
 import Feedback from "../models/Feedback.js";
 import Notification from "../models/Notification.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import {
+  formatCategoryForClient,
+  normalizeCategorySections,
+  normalizeCorrectAnswers,
+  normalizeQuestionFormat,
+  normalizeSectionKey,
+} from "../utils/testUtils.js";
 export {
   getAdminTrackBoards,
   createTrackBoard,
@@ -21,24 +28,94 @@ const toSlug = (value = "") =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-const validateQuestionPayload = ({ questionText, category, testType, options, correctAnswer, explanation, questionImage }) => {
-  if (!questionText || !category || !testType || !explanation) {
-    return "Question text, category, test type, and explanation are required.";
+const buildCsirMathSections = () => [
+  {
+    key: "part-a",
+    title: "Part A",
+    questionCount: 20,
+    attemptLimit: 15,
+    marksPerQuestion: 2,
+    questionType: "mcq",
+  },
+  {
+    key: "part-b",
+    title: "Part B",
+    questionCount: 40,
+    attemptLimit: 25,
+    marksPerQuestion: 3,
+    questionType: "mcq",
+  },
+  {
+    key: "part-c",
+    title: "Part C",
+    questionCount: 60,
+    attemptLimit: 20,
+    marksPerQuestion: 4.75,
+    questionType: "msq",
+  },
+];
+
+const resolveCategorySections = ({ sections, testType, examName, questionCount }) => {
+  if (Array.isArray(sections) && sections.length) {
+    return normalizeCategorySections({ sections, questionCount });
+  }
+
+  if (testType === "flt" && String(examName || "").toLowerCase().includes("csir")) {
+    return buildCsirMathSections();
+  }
+
+  return normalizeCategorySections({ questionCount });
+};
+
+const validateQuestionPayload = async ({ questionText, category, options, questionImage, correctAnswer, correctAnswers, questionFormat, sectionKey }) => {
+  if (!questionText || !category) {
+    return { error: "Question text and test selection are required." };
   }
 
   if (!Array.isArray(options) || options.length !== 4 || options.some((option) => !String(option).trim())) {
-    return "Exactly four non-empty options are required.";
-  }
-
-  if (![0, 1, 2, 3].includes(Number(correctAnswer))) {
-    return "correctAnswer must be a number between 0 and 3.";
+    return { error: "Exactly four non-empty options are required." };
   }
 
   if (questionImage && !String(questionImage).trim()) {
-    return "questionImage must be a valid path or URL.";
+    return { error: "questionImage must be a valid path or URL." };
   }
 
-  return null;
+  const categoryDoc = await TestCategory.findById(category).lean();
+
+  if (!categoryDoc) {
+    return { error: "Selected test was not found." };
+  }
+
+  const sections = normalizeCategorySections(categoryDoc);
+  const nextSectionKey = normalizeSectionKey(sectionKey) || (sections.length === 1 ? sections[0].key : "");
+  const matchedSection = sections.find((section) => section.key === nextSectionKey);
+
+  if (!matchedSection) {
+    return { error: "Select a valid section for this question." };
+  }
+
+  const nextQuestionFormat = normalizeQuestionFormat({ questionFormat, sectionKey: nextSectionKey }, sections);
+
+  if (matchedSection.questionType !== nextQuestionFormat) {
+    return { error: `Questions in ${matchedSection.title} must use ${matchedSection.questionType.toUpperCase()} format.` };
+  }
+
+  const nextCorrectAnswers = normalizeCorrectAnswers({ correctAnswer, correctAnswers });
+
+  if (!nextCorrectAnswers.length) {
+    return { error: "Select at least one correct option." };
+  }
+
+  if (nextQuestionFormat === "mcq" && nextCorrectAnswers.length !== 1) {
+    return { error: "MCQ questions must have exactly one correct answer." };
+  }
+
+  return {
+    categoryDoc,
+    section: matchedSection,
+    questionFormat: nextQuestionFormat,
+    correctAnswers: nextCorrectAnswers,
+  };
 };
 
 export const getAdminOverview = asyncHandler(async (_req, res) => {
@@ -278,21 +355,24 @@ export const getAdminQuestions = asyncHandler(async (req, res) => {
 });
 
 export const createQuestion = asyncHandler(async (req, res) => {
-  const validationError = validateQuestionPayload(req.body);
+  const validationResult = await validateQuestionPayload(req.body);
 
-  if (validationError) {
+  if (validationResult?.error) {
     res.status(400);
-    throw new Error(validationError);
+    throw new Error(validationResult.error);
   }
 
   const question = await Question.create({
     questionText: req.body.questionText,
     questionImage: req.body.questionImage || "",
-    category: req.body.category,
-    testType: req.body.testType,
+    category: validationResult.categoryDoc._id,
+    testType: validationResult.categoryDoc.testType,
+    sectionKey: validationResult.section.key,
+    questionFormat: validationResult.questionFormat,
     options: req.body.options,
-    correctAnswer: Number(req.body.correctAnswer),
-    explanation: req.body.explanation,
+    correctAnswer: validationResult.questionFormat === "mcq" ? validationResult.correctAnswers[0] : null,
+    correctAnswers: validationResult.correctAnswers,
+    explanation: req.body.explanation || "",
     createdBy: req.user._id,
   });
 
@@ -302,11 +382,11 @@ export const createQuestion = asyncHandler(async (req, res) => {
 });
 
 export const updateQuestion = asyncHandler(async (req, res) => {
-  const validationError = validateQuestionPayload(req.body);
+  const validationResult = await validateQuestionPayload(req.body);
 
-  if (validationError) {
+  if (validationResult?.error) {
     res.status(400);
-    throw new Error(validationError);
+    throw new Error(validationResult.error);
   }
 
   const question = await Question.findById(req.params.questionId);
@@ -318,11 +398,14 @@ export const updateQuestion = asyncHandler(async (req, res) => {
 
   question.questionText = req.body.questionText;
   question.questionImage = req.body.questionImage || "";
-  question.category = req.body.category;
-  question.testType = req.body.testType;
+  question.category = validationResult.categoryDoc._id;
+  question.testType = validationResult.categoryDoc.testType;
+  question.sectionKey = validationResult.section.key;
+  question.questionFormat = validationResult.questionFormat;
   question.options = req.body.options;
-  question.correctAnswer = Number(req.body.correctAnswer);
-  question.explanation = req.body.explanation;
+  question.correctAnswer = validationResult.questionFormat === "mcq" ? validationResult.correctAnswers[0] : null;
+  question.correctAnswers = validationResult.correctAnswers;
+  question.explanation = req.body.explanation || "";
 
   await question.save();
   await question.populate("category", "name testType");
@@ -361,10 +444,11 @@ export const getAdminCategories = asyncHandler(async (_req, res) => {
   }, {});
 
   res.json(
-    categories.map((category) => ({
-      ...category,
-      questionBankSize: countMap[String(category._id)] || 0,
-    })),
+    categories.map((category) =>
+      formatCategoryForClient(category, {
+        questionBankSize: countMap[String(category._id)] || 0,
+      }),
+    ),
   );
 });
 
@@ -376,18 +460,23 @@ export const createCategory = asyncHandler(async (req, res) => {
     subjectLabel = "",
     testType,
     durationMinutes,
-    questionCount,
     isActive = true,
     isDemo = false,
   } = req.body;
 
-  if (!name || !testType || !durationMinutes || !questionCount) {
+  if (!name || !testType || !durationMinutes) {
     res.status(400);
-    throw new Error("Name, test type, duration, and question count are required.");
+    throw new Error("Name, test type, and duration are required.");
   }
 
   const slug = req.body.slug ? toSlug(req.body.slug) : toSlug(name);
   const nextDemoKey = isDemo ? (req.body.demoKey ? toSlug(req.body.demoKey) : slug) : undefined;
+  const sections = resolveCategorySections({
+    sections: req.body.sections,
+    testType,
+    examName,
+    questionCount: req.body.questionCount,
+  });
   const existingCategory = await TestCategory.findOne({ slug });
 
   if (existingCategory) {
@@ -412,13 +501,14 @@ export const createCategory = asyncHandler(async (req, res) => {
     subjectLabel: subjectLabel || name,
     testType,
     durationMinutes: Number(durationMinutes),
-    questionCount: Number(questionCount),
+    questionCount: sections.reduce((total, section) => total + section.questionCount, 0),
+    sections,
     isActive,
     isDemo,
     demoKey: nextDemoKey,
   });
 
-  res.status(201).json(category);
+  res.status(201).json(formatCategoryForClient(category.toObject()));
 });
 
 export const updateCategory = asyncHandler(async (req, res) => {
@@ -442,11 +532,20 @@ export const updateCategory = asyncHandler(async (req, res) => {
   }
 
   const nextIsDemo = req.body.isDemo ?? category.isDemo;
+  const nextName = req.body.name ?? category.name;
+  const nextExamName = req.body.examName ?? category.examName;
+  const nextTestType = req.body.testType ?? category.testType;
   const nextDemoKey = nextIsDemo
     ? req.body.demoKey
       ? toSlug(req.body.demoKey)
       : category.demoKey || nextSlug
     : undefined;
+  const nextSections = resolveCategorySections({
+    sections: req.body.sections ?? category.sections,
+    testType: nextTestType,
+    examName: nextExamName,
+    questionCount: req.body.questionCount ?? category.questionCount,
+  });
 
   if (nextDemoKey) {
     const duplicateDemoKey = await TestCategory.findOne({
@@ -460,21 +559,22 @@ export const updateCategory = asyncHandler(async (req, res) => {
     }
   }
 
-  category.name = req.body.name ?? category.name;
+  category.name = nextName;
   category.slug = nextSlug;
   category.description = req.body.description ?? category.description;
-  category.examName = req.body.examName ?? category.examName;
+  category.examName = nextExamName;
   category.subjectLabel = req.body.subjectLabel ?? category.subjectLabel;
-  category.testType = req.body.testType ?? category.testType;
+  category.testType = nextTestType;
   category.durationMinutes = Number(req.body.durationMinutes ?? category.durationMinutes);
-  category.questionCount = Number(req.body.questionCount ?? category.questionCount);
+  category.questionCount = nextSections.reduce((total, section) => total + section.questionCount, 0);
+  category.sections = nextSections;
   category.isActive = req.body.isActive ?? category.isActive;
   category.isDemo = nextIsDemo;
   category.demoKey = nextDemoKey;
 
   await category.save();
 
-  res.json(category);
+  res.json(formatCategoryForClient(category.toObject()));
 });
 
 export const deleteCategory = asyncHandler(async (req, res) => {

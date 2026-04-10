@@ -1,5 +1,6 @@
 import TestCategory from "../models/TestCategory.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { formatCategoryForClient } from "../utils/testUtils.js";
 
 export const getCategories = asyncHandler(async (req, res) => {
   const filter = { isActive: true };
@@ -9,5 +10,5 @@ export const getCategories = asyncHandler(async (req, res) => {
   }
 
   const categories = await TestCategory.find(filter).sort({ testType: 1, name: 1 });
-  res.json(categories);
+  res.json(categories.map((category) => formatCategoryForClient(category.toObject())));
 });

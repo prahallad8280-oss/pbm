@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import api from "../../api/client.js";
@@ -8,10 +8,19 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import useTimer from "../../hooks/useTimer.js";
 
 const createInitialQuestionState = () => ({
-  selectedAnswer: null,
+  selectedAnswers: [],
   markedForReview: false,
   visited: false,
 });
+
+const getSelectedAnswers = (questionState = {}) =>
+  Array.isArray(questionState.selectedAnswers)
+    ? questionState.selectedAnswers
+    : questionState.selectedAnswer === null || questionState.selectedAnswer === undefined
+      ? []
+      : [Number(questionState.selectedAnswer)];
+
+const isAnswered = (questionState = {}) => getSelectedAnswers(questionState).length > 0;
 
 const TestAttemptPage = () => {
   const navigate = useNavigate();
@@ -27,6 +36,7 @@ const TestAttemptPage = () => {
   const [consentAccepted, setConsentAccepted] = useState(false);
   const [showConsentWarning, setShowConsentWarning] = useState(false);
   const [paletteCollapsed, setPaletteCollapsed] = useState(false);
+  const [attemptWarning, setAttemptWarning] = useState("");
 
   useEffect(() => {
     const loadCategoryPreview = async () => {
@@ -94,6 +104,21 @@ const TestAttemptPage = () => {
   }, [currentIndex, testData]);
 
   const totalSeconds = Number(testData?.durationMinutes || categoryPreview?.durationMinutes || 0) * 60;
+  const sections = testData?.category?.sections || categoryPreview?.sections || [];
+
+  const sectionSummaries = useMemo(
+    () =>
+      sections.map((section) => {
+        const sectionQuestions = (testData?.questions || []).filter((question) => question.sectionKey === section.key);
+        const attemptedCount = sectionQuestions.filter((question) => isAnswered(questionStates[question.id])).length;
+
+        return {
+          ...section,
+          attemptedCount,
+        };
+      }),
+    [questionStates, sections, testData],
+  );
 
   const startAttempt = async () => {
     setStarting(true);
@@ -128,7 +153,7 @@ const TestAttemptPage = () => {
       return "not-visited";
     }
 
-    if (questionState.markedForReview && questionState.selectedAnswer !== null) {
+    if (questionState.markedForReview && isAnswered(questionState)) {
       return "answered-review";
     }
 
@@ -136,7 +161,7 @@ const TestAttemptPage = () => {
       return "review";
     }
 
-    if (questionState.selectedAnswer !== null) {
+    if (isAnswered(questionState)) {
       return "answered";
     }
 
@@ -149,6 +174,7 @@ const TestAttemptPage = () => {
     }
 
     const boundedIndex = Math.min(Math.max(nextIndex, 0), testData.questions.length - 1);
+    setAttemptWarning("");
     setCurrentIndex(boundedIndex);
   };
 
@@ -164,11 +190,43 @@ const TestAttemptPage = () => {
   };
 
   const handleSelectAnswer = (questionId, optionIndex) => {
-    updateQuestionState(questionId, (current) => ({
-      ...current,
-      selectedAnswer: current.selectedAnswer === optionIndex ? null : optionIndex,
-      visited: true,
-    }));
+    const currentQuestion = testData.questions.find((question) => question.id === questionId);
+    const sectionRule = sections.find((section) => section.key === currentQuestion?.sectionKey);
+
+    updateQuestionState(questionId, (current) => {
+      const selectedAnswers = getSelectedAnswers(current);
+      const alreadyAnswered = selectedAnswers.length > 0;
+      const alreadySelected = selectedAnswers.includes(optionIndex);
+      const nextSelectedAnswers =
+        currentQuestion?.questionFormat === "msq"
+          ? alreadySelected
+            ? selectedAnswers.filter((value) => value !== optionIndex)
+            : [...selectedAnswers, optionIndex].sort((left, right) => left - right)
+          : alreadySelected
+            ? []
+            : [optionIndex];
+
+      if (!alreadyAnswered && nextSelectedAnswers.length && sectionRule) {
+        const attemptedCount =
+          sectionSummaries.find((section) => section.key === sectionRule.key)?.attemptedCount || 0;
+
+        if (attemptedCount >= sectionRule.attemptLimit) {
+          setAttemptWarning(`You can attempt only ${sectionRule.attemptLimit} questions in ${sectionRule.title}.`);
+          return {
+            ...current,
+            visited: true,
+          };
+        }
+      }
+
+      setAttemptWarning("");
+
+      return {
+        ...current,
+        selectedAnswers: nextSelectedAnswers,
+        visited: true,
+      };
+    });
   };
 
   const handleSaveNext = () => {
@@ -204,9 +262,10 @@ const TestAttemptPage = () => {
     const questionId = testData.questions[currentIndex].id;
     updateQuestionState(questionId, (current) => ({
       ...current,
-      selectedAnswer: null,
+      selectedAnswers: [],
       visited: true,
     }));
+    setAttemptWarning("");
   };
 
   const handleSubmit = async (forceSubmit = false) => {
@@ -224,11 +283,8 @@ const TestAttemptPage = () => {
       const payload = {
         responses: testData.questions.map((question) => ({
           questionId: question.id,
-          selectedAnswer:
-            questionStates[question.id]?.selectedAnswer === undefined ||
-            questionStates[question.id]?.selectedAnswer === null
-              ? null
-              : Number(questionStates[question.id].selectedAnswer),
+          selectedAnswers: getSelectedAnswers(questionStates[question.id]),
+          selectedAnswer: getSelectedAnswers(questionStates[question.id])[0] ?? null,
         })),
         timeTakenSeconds: totalSeconds - secondsLeft,
       };
@@ -281,12 +337,21 @@ const TestAttemptPage = () => {
     <ExamAttemptWorkspace
       candidateName={user?.name || "Candidate"}
       category={testData.category}
+      sections={sections}
       questions={testData.questions}
       currentIndex={currentIndex}
+      currentSectionKey={testData.questions[currentIndex]?.sectionKey || sections[0]?.key}
+      sectionSummaries={sectionSummaries}
       questionStates={questionStates}
       secondsLeft={secondsLeft}
       paletteCollapsed={paletteCollapsed}
       onTogglePalette={() => setPaletteCollapsed((current) => !current)}
+      onJumpToSection={(sectionKey) => {
+        const nextIndex = testData.questions.findIndex((question) => question.sectionKey === sectionKey);
+        if (nextIndex >= 0) {
+          moveToQuestion(nextIndex);
+        }
+      }}
       onJumpToQuestion={moveToQuestion}
       onSelectAnswer={handleSelectAnswer}
       onClearResponse={handleClearResponse}
@@ -297,6 +362,7 @@ const TestAttemptPage = () => {
       onNext={() => moveToQuestion(currentIndex + 1)}
       onSubmit={() => handleSubmit()}
       submitting={submitting}
+      attemptWarning={attemptWarning}
       getQuestionStatus={getQuestionStatus}
     />
   );

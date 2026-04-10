@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import api from "../../api/client.js";
+import MathText from "../../components/common/MathText.jsx";
 
 const emptyNotification = {
   label: "",
@@ -65,13 +66,15 @@ const NotificationManagerPage = () => {
 
   return (
     <div className="split-layout">
-      <form className="form-card" onSubmit={handleSubmit}>
+      <form className="form-card" onSubmit={handleSubmit} autoComplete="off">
         <div className="form-card-header">
           <div>
             <p className="section-tag">Notifications</p>
             <h3>Create a home-page notice</h3>
           </div>
         </div>
+
+        <p className="field-hint">LaTeX is supported in the title and notification text. Use <code>\(...\)</code> or <code>$$...$$</code>.</p>
 
         <label className="field">
           <span>Label</span>
@@ -154,7 +157,9 @@ const NotificationManagerPage = () => {
                 <div className="entity-card-header">
                   <div>
                     <p className={`pill ${item.isActive ? "" : "pill-danger"}`}>{item.label}</p>
-                    <h4>{item.title}</h4>
+                    <h4>
+                      <MathText inline text={item.title} />
+                    </h4>
                   </div>
                   <div className="action-row">
                     <p className="muted-text">{new Date(item.createdAt).toLocaleString()}</p>
@@ -164,7 +169,7 @@ const NotificationManagerPage = () => {
                   </div>
                 </div>
 
-                <p>{item.body}</p>
+                <MathText text={item.body} />
                 {item.link ? <p className="muted-text">Link: {item.link}</p> : null}
                 <p className="muted-text">{item.isActive ? "Visible on home page" : "Hidden from home page"}</p>
               </article>

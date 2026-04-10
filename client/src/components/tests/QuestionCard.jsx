@@ -1,3 +1,5 @@
+import MathText from "../common/MathText.jsx";
+
 const optionLabels = ["A", "B", "C", "D"];
 
 const QuestionCard = ({ question, index, total, selectedAnswer, onSelect }) => (
@@ -6,7 +8,9 @@ const QuestionCard = ({ question, index, total, selectedAnswer, onSelect }) => (
       <p className="section-tag">
         Question {index + 1} of {total}
       </p>
-      <h3>{question.questionText}</h3>
+      <h3>
+        <MathText inline text={question.questionText} />
+      </h3>
     </div>
 
     <div className="options-grid">
@@ -18,7 +22,9 @@ const QuestionCard = ({ question, index, total, selectedAnswer, onSelect }) => (
           onClick={() => onSelect(optionIndex)}
         >
           <span>{optionLabels[optionIndex]}</span>
-          <strong>{option}</strong>
+          <strong>
+            <MathText inline text={option} />
+          </strong>
         </button>
       ))}
     </div>
@@ -26,4 +32,3 @@ const QuestionCard = ({ question, index, total, selectedAnswer, onSelect }) => (
 );
 
 export default QuestionCard;
-

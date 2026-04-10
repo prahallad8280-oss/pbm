@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import api from "../../api/client.js";
+import MathText from "../../components/common/MathText.jsx";
 import { examTracks } from "../../data/examTracks.js";
 
 const emptyBoard = {
@@ -138,7 +139,9 @@ const TrackBoardManagerPage = () => {
           </div>
         </div>
 
-        <form className="plain-form" onSubmit={handleSubmit}>
+        <form className="plain-form" onSubmit={handleSubmit} autoComplete="off">
+          <p className="field-hint">Board titles and item titles also support LaTeX, so mathematics topic names can be written naturally.</p>
+
           <div className="field-grid">
             <label className="field">
               <span>Track</span>
@@ -264,12 +267,14 @@ const TrackBoardManagerPage = () => {
               <article key={board._id} className="test-line-item">
                 <div>
                   <p className={`pill ${board.isActive ? "" : "pill-danger"}`}>{getTrackTitle(board.trackSlug)}</p>
-                  <h4>{board.title}</h4>
+                  <h4>
+                    <MathText inline text={board.title} />
+                  </h4>
                   <p className="test-line-meta">
                     {board.items.length} dropdown item{board.items.length === 1 ? "" : "s"} |{" "}
                     {board.isActive ? "Visible on public page" : "Hidden"}
                   </p>
-                  <p className="muted-text">{board.items.map((item) => item.title).join(" | ")}</p>
+                  <MathText className="muted-text" text={board.items.map((item) => item.title).join(" | ")} />
                 </div>
 
                 <div className="action-row">

@@ -3,6 +3,64 @@ import { useLocation } from "react-router-dom";
 
 import api from "../../api/client.js";
 import QuestionForm from "../../components/admin/QuestionForm.jsx";
+import MathText from "../../components/common/MathText.jsx";
+
+const buildSingleSection = (overrides = {}) => ({
+  key: "main",
+  title: "Main section",
+  questionCount: 10,
+  attemptLimit: 10,
+  marksPerQuestion: 1,
+  questionType: "mcq",
+  ...overrides,
+});
+
+const buildCsirSections = () => [
+  { key: "part-a", title: "Part A", questionCount: 20, attemptLimit: 15, marksPerQuestion: 2, questionType: "mcq" },
+  { key: "part-b", title: "Part B", questionCount: 40, attemptLimit: 25, marksPerQuestion: 3, questionType: "mcq" },
+  { key: "part-c", title: "Part C", questionCount: 60, attemptLimit: 20, marksPerQuestion: 4.75, questionType: "msq" },
+];
+
+const normalizeSectionKey = (value = "") =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const normalizeSections = (sections = [], fallbackQuestionCount = 10) => {
+  const baseSections = Array.isArray(sections) && sections.length ? sections : [buildSingleSection({ questionCount: fallbackQuestionCount, attemptLimit: fallbackQuestionCount })];
+  const usedKeys = new Set();
+
+  return baseSections.map((section, index) => {
+    const questionCount = Math.max(1, Number(section.questionCount || fallbackQuestionCount || 1));
+    const attemptLimit = Math.min(Math.max(1, Number(section.attemptLimit || questionCount)), questionCount);
+    const baseKey = normalizeSectionKey(section.key || section.title || `section-${index + 1}`) || `section-${index + 1}`;
+    let uniqueKey = baseKey;
+    let suffix = 2;
+
+    while (usedKeys.has(uniqueKey)) {
+      uniqueKey = `${baseKey}-${suffix}`;
+      suffix += 1;
+    }
+
+    usedKeys.add(uniqueKey);
+
+    return {
+      key: uniqueKey,
+      title: section.title || `Section ${index + 1}`,
+      questionCount,
+      attemptLimit,
+      marksPerQuestion: Number(section.marksPerQuestion || 1),
+      questionType: section.questionType === "msq" ? "msq" : "mcq",
+    };
+  });
+};
+
+const getQuestionCountTotal = (sections = []) => sections.reduce((total, section) => total + Number(section.questionCount || 0), 0);
+const getAttemptLimitTotal = (sections = []) => sections.reduce((total, section) => total + Number(section.attemptLimit || 0), 0);
+const getTotalMarks = (sections = []) =>
+  sections.reduce((total, section) => total + Number(section.attemptLimit || 0) * Number(section.marksPerQuestion || 0), 0);
 
 const emptyTest = {
   name: "",
@@ -13,6 +71,7 @@ const emptyTest = {
   testType: "subject",
   durationMinutes: 45,
   questionCount: 10,
+  sections: [buildSingleSection()],
   isActive: true,
   isDemo: false,
   demoKey: "",
@@ -28,6 +87,7 @@ const buildTestForm = (test) =>
         isActive: test.isActive ?? true,
         isDemo: test.isDemo ?? false,
         demoKey: test.demoKey || "",
+        sections: normalizeSections(test.sections, test.questionCount || emptyTest.questionCount),
       }
     : { ...emptyTest };
 
@@ -44,6 +104,7 @@ const TestBuilderPage = () => {
   const [savingQuestion, setSavingQuestion] = useState(false);
   const [testError, setTestError] = useState("");
   const [questionError, setQuestionError] = useState("");
+  const [questionResetSignal, setQuestionResetSignal] = useState(0);
 
   const activeTest = useMemo(
     () => tests.find((test) => test._id === activeTestId) || null,
@@ -69,7 +130,7 @@ const TestBuilderPage = () => {
     }
   };
 
-  const loadTests = async (preferredTestId = null) => {
+  const loadTests = async ({ preferredTestId = null, autoSelectFirst = true } = {}) => {
     const { data } = await api.get("/admin/categories");
     setTests(data);
 
@@ -79,7 +140,7 @@ const TestBuilderPage = () => {
       nextActiveId = null;
     }
 
-    if (!nextActiveId && data.length) {
+    if (!nextActiveId && autoSelectFirst && data.length) {
       nextActiveId = data[0]._id;
     }
 
@@ -144,18 +205,113 @@ const TestBuilderPage = () => {
     setQuestionError("");
   };
 
+  const handleTestTypeChange = (nextTestType) => {
+    setTestForm((current) => {
+      const hasOnlyDefaultSection =
+        current.sections.length === 1 &&
+        current.sections[0].key === "main" &&
+        current.sections[0].title === "Main section";
+
+      return {
+        ...current,
+        testType: nextTestType,
+        sections:
+          nextTestType === "flt" && hasOnlyDefaultSection
+            ? buildCsirSections()
+            : nextTestType === "subject" && current.sections.every((section) => section.key.startsWith("part-"))
+              ? [buildSingleSection({ questionCount: current.questionCount, attemptLimit: current.questionCount })]
+              : current.sections,
+      };
+    });
+  };
+
+  const handleSectionChange = (index, field, value) => {
+    setTestForm((current) => ({
+      ...current,
+      sections: normalizeSections(
+        current.sections.map((section, sectionIndex) =>
+          sectionIndex === index
+            ? {
+                ...section,
+                [field]:
+                  field === "questionCount" || field === "attemptLimit" || field === "marksPerQuestion"
+                    ? Number(value)
+                    : value,
+              }
+            : section,
+        ),
+        current.questionCount,
+      ),
+    }));
+  };
+
+  const handleAddSection = () => {
+    setTestForm((current) => ({
+      ...current,
+      sections: normalizeSections(
+        [
+          ...current.sections,
+          {
+            key: `section-${current.sections.length + 1}`,
+            title: `Section ${current.sections.length + 1}`,
+            questionCount: 5,
+            attemptLimit: 5,
+            marksPerQuestion: 1,
+            questionType: "mcq",
+          },
+        ],
+        current.questionCount,
+      ),
+    }));
+  };
+
+  const handleRemoveSection = (index) => {
+    setTestForm((current) => ({
+      ...current,
+      sections: normalizeSections(
+        current.sections.filter((_, sectionIndex) => sectionIndex !== index),
+        current.questionCount,
+      ),
+    }));
+  };
+
+  const handleLoadCsirPreset = () => {
+    setTestForm((current) => ({
+      ...current,
+      testType: "flt",
+      examName: current.examName || "CSIR",
+      subjectLabel: current.subjectLabel || "MATHEMATIC SCIENCE SET A",
+      durationMinutes: 180,
+      sections: buildCsirSections(),
+    }));
+  };
+
   const handleSubmitTest = async (event) => {
     event.preventDefault();
     setSavingTest(true);
     setTestError("");
 
     try {
+      const normalizedSections = normalizeSections(testForm.sections, testForm.questionCount);
+      const payload = {
+        ...testForm,
+        sections: normalizedSections,
+        questionCount: getQuestionCountTotal(normalizedSections),
+      };
       const request = testForm._id
-        ? api.put(`/admin/categories/${testForm._id}`, testForm)
-        : api.post("/admin/categories", testForm);
+        ? api.put(`/admin/categories/${testForm._id}`, payload)
+        : api.post("/admin/categories", payload);
       const { data } = await request;
 
-      await loadTests(data._id);
+      if (testForm._id) {
+        await loadTests({ preferredTestId: data._id });
+      } else {
+        await loadTests({ autoSelectFirst: false });
+        setTestForm(buildTestForm());
+        setActiveTestId(null);
+        setQuestions([]);
+        document.getElementById("available-tests-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     } catch (requestError) {
       setTestError(requestError.response?.data?.message || "Failed to save test.");
     } finally {
@@ -203,7 +359,8 @@ const TestBuilderPage = () => {
       }
 
       setEditingQuestion(null);
-      await loadTests(activeTest._id);
+      setQuestionResetSignal((current) => current + 1);
+      await loadTests({ preferredTestId: activeTest._id });
     } catch (requestError) {
       setQuestionError(requestError.response?.data?.message || "Failed to save question.");
     } finally {
@@ -218,7 +375,7 @@ const TestBuilderPage = () => {
 
     try {
       await api.delete(`/admin/questions/${questionId}`);
-      await loadTests(activeTest?._id || null);
+      await loadTests({ preferredTestId: activeTest?._id || null });
     } catch (requestError) {
       setQuestionError(requestError.response?.data?.message || "Failed to delete question.");
     }
@@ -281,7 +438,9 @@ const TestBuilderPage = () => {
           </p>
         )}
 
-        <form className="plain-form" onSubmit={handleSubmitTest}>
+        <form className="plain-form" onSubmit={handleSubmitTest} autoComplete="off">
+          <p className="field-hint">Text fields support LaTeX. Use <code>\(...\)</code> for inline math or <code>$$...$$</code> for display equations.</p>
+
           <label className="field">
             <span>Name</span>
             <input
@@ -329,7 +488,7 @@ const TestBuilderPage = () => {
               <span>Test type</span>
               <select
                 value={testForm.testType}
-                onChange={(event) => setTestForm((current) => ({ ...current, testType: event.target.value }))}
+                onChange={(event) => handleTestTypeChange(event.target.value)}
               >
                 <option value="subject">Subject-wise</option>
                 <option value="flt">Full length</option>
@@ -354,22 +513,121 @@ const TestBuilderPage = () => {
                 min="1"
                 value={testForm.durationMinutes}
                 onChange={(event) =>
-                  setTestForm((current) => ({ ...current, durationMinutes: Number(event.target.value) }))
+                    setTestForm((current) => ({ ...current, durationMinutes: Number(event.target.value) }))
                 }
               />
             </label>
 
-            <label className="field">
-              <span>Planned question count</span>
-              <input
-                type="number"
-                min="1"
-                value={testForm.questionCount}
-                onChange={(event) =>
-                  setTestForm((current) => ({ ...current, questionCount: Number(event.target.value) }))
-                }
-              />
-            </label>
+            <div className="field fixed-field">
+              <span>Test totals</span>
+              <div className="fixed-field-value">
+                <strong>{getQuestionCountTotal(testForm.sections)} questions</strong>
+                <small>
+                  Attempt {getAttemptLimitTotal(testForm.sections)} | {getTotalMarks(testForm.sections)} marks
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <div className="workspace-section">
+            <div className="section-headline">
+              <div>
+                <p className="section-tag">Sections and scoring</p>
+                <h3>Define the section pattern, attempt limits, marks, and question type.</h3>
+              </div>
+
+              <div className="action-row">
+                <button type="button" className="button button-secondary" onClick={handleLoadCsirPreset}>
+                  Use CSIR Part A/B/C
+                </button>
+                <button type="button" className="button button-ghost" onClick={handleAddSection}>
+                  Add section
+                </button>
+              </div>
+            </div>
+
+            <div className="stack-list">
+              {testForm.sections.map((section, index) => (
+                <div key={`${section.key}-${index}`} className="question-line-item">
+                  <div className="plain-form">
+                    <div className="field-grid">
+                      <label className="field">
+                        <span>Section title</span>
+                        <input
+                          type="text"
+                          value={section.title}
+                          onChange={(event) => handleSectionChange(index, "title", event.target.value)}
+                          required
+                        />
+                      </label>
+
+                      <label className="field">
+                        <span>Section key</span>
+                        <input
+                          type="text"
+                          value={section.key}
+                          onChange={(event) => handleSectionChange(index, "key", event.target.value)}
+                          required
+                        />
+                      </label>
+                    </div>
+
+                    <div className="field-grid">
+                      <label className="field">
+                        <span>Total questions</span>
+                        <input
+                          type="number"
+                          min="1"
+                          value={section.questionCount}
+                          onChange={(event) => handleSectionChange(index, "questionCount", event.target.value)}
+                        />
+                      </label>
+
+                      <label className="field">
+                        <span>Attempt limit</span>
+                        <input
+                          type="number"
+                          min="1"
+                          max={section.questionCount}
+                          value={section.attemptLimit}
+                          onChange={(event) => handleSectionChange(index, "attemptLimit", event.target.value)}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="field-grid">
+                      <label className="field">
+                        <span>Marks per question</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.25"
+                          value={section.marksPerQuestion}
+                          onChange={(event) => handleSectionChange(index, "marksPerQuestion", event.target.value)}
+                        />
+                      </label>
+
+                      <label className="field">
+                        <span>Question type</span>
+                        <select
+                          value={section.questionType}
+                          onChange={(event) => handleSectionChange(index, "questionType", event.target.value)}
+                        >
+                          <option value="mcq">MCQ</option>
+                          <option value="msq">MSQ</option>
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+
+                  {testForm.sections.length > 1 ? (
+                    <button type="button" className="button button-danger" onClick={() => handleRemoveSection(index)}>
+                      Remove
+                    </button>
+                  ) : null}
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="inline-choice-row">
@@ -434,11 +692,16 @@ const TestBuilderPage = () => {
                   <p className={`pill ${test.testType === "flt" ? "pill-alt" : ""}`}>
                     {test.testType === "flt" ? "FLT" : "Subject"}
                   </p>
-                  <h4>{test.name}</h4>
-                  <p className="muted-text">{test.description || "No description added yet."}</p>
+                  <h4>
+                    <MathText inline text={test.name} />
+                  </h4>
+                  <MathText
+                    className="muted-text"
+                    text={test.description || "No description added yet."}
+                  />
                   <p className="test-line-meta">
-                    {test.examName || "Exam"} | {test.questionBankSize}/{test.questionCount} questions |{" "}
-                    {test.durationMinutes} mins
+                    {test.examName || "Exam"} | {test.questionBankSize}/{test.questionCount} questions | attempt{" "}
+                    {test.attemptableCount} | {test.totalMarks} marks | {test.durationMinutes} mins
                   </p>
                 </div>
 
@@ -465,7 +728,8 @@ const TestBuilderPage = () => {
 
           {activeTest ? (
             <p className="workspace-meta">
-              {activeTest.questionBankSize} in bank | target {activeTest.questionCount} |{" "}
+              {activeTest.questionBankSize} in bank | target {activeTest.questionCount} | attempt{" "}
+              {activeTest.attemptableCount} | {activeTest.totalMarks} marks |{" "}
               {activeTest.testType === "flt" ? "Full length" : "Subject-wise"}
             </p>
           ) : null}
@@ -479,6 +743,7 @@ const TestBuilderPage = () => {
               categories={tests}
               defaultCategoryId={activeTest._id}
               defaultTestType={activeTest.testType}
+              availableSections={activeTest.sections || []}
               hideCategoryField
               fixedCategoryName={activeTest.name}
               fixedCategoryMeta={`${activeTest.examName || "Exam"} | ${
@@ -487,6 +752,7 @@ const TestBuilderPage = () => {
               eyebrow="Question bank"
               title={editingQuestion ? "Edit question" : "Add a question"}
               initialValues={editingQuestion}
+              resetSignal={questionResetSignal}
               onSubmit={handleSubmitQuestion}
               onCancel={() => setEditingQuestion(null)}
               submitting={savingQuestion}
@@ -505,13 +771,32 @@ const TestBuilderPage = () => {
                   {questions.map((question, index) => (
                     <article key={question._id} className="question-line-item">
                       <div>
+                        {(() => {
+                          const sectionTitle =
+                            activeTest.sections?.find((section) => section.key === question.sectionKey)?.title ||
+                            question.sectionKey ||
+                            "Section";
+                          const answerLabels = (
+                            Array.isArray(question.correctAnswers) && question.correctAnswers.length
+                              ? question.correctAnswers
+                              : [question.correctAnswer]
+                          )
+                            .filter((value) => value !== null && value !== undefined)
+                            .map((value) => optionLabels[value])
+                            .join(", ");
+
+                          return (
+                            <>
                         <p className="question-line-title">
-                          Q{index + 1}. {question.questionText}
+                          Q{index + 1}. <MathText inline text={question.questionText} />
                         </p>
                         <p className="question-line-copy">
-                          Correct answer: {optionLabels[question.correctAnswer]}{" "}
-                          {question.questionImage ? "| Includes figure" : ""}
+                          {sectionTitle} | {question.questionFormat?.toUpperCase()} | Correct: {answerLabels}
+                          {question.questionImage ? " | Includes figure" : ""}
                         </p>
+                            </>
+                          );
+                        })()}
                       </div>
 
                       <div className="action-row">

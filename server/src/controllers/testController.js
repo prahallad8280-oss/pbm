@@ -2,7 +2,20 @@ import Question from "../models/Question.js";
 import TestAttempt from "../models/TestAttempt.js";
 import TestCategory from "../models/TestCategory.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import { formatAttemptForClient, sanitizeQuestion, shuffleArray } from "../utils/testUtils.js";
+import {
+  buildSectionMap,
+  buildSectionSummaries,
+  formatAttemptForClient,
+  formatCategoryForClient,
+  getCategoryTotalMarks,
+  normalizeCategorySections,
+  normalizeCorrectAnswers,
+  normalizeQuestionFormat,
+  normalizeQuestionSectionKey,
+  normalizeSelectedAnswers,
+  sanitizeQuestion,
+  shuffleArray,
+} from "../utils/testUtils.js";
 import jwt from "jsonwebtoken";
 
 const FEATURED_PUBLIC_TESTS = {
@@ -13,14 +26,16 @@ const FEATURED_PUBLIC_TESTS = {
 
 const normalizeText = (value = "") => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
-const buildStoredResponses = (questionOrder, questions, responses = []) => {
+const sameAnswers = (left = [], right = []) =>
+  left.length === right.length && left.every((value, index) => value === right[index]);
+
+const buildStoredResponses = (questionOrder, questions, responses = [], sections = []) => {
   const questionMap = new Map(questions.map((question) => [String(question._id), question]));
+  const sectionMap = buildSectionMap(sections);
   const responseMap = new Map(
     responses.map((response) => [
       String(response.questionId),
-      response.selectedAnswer === null || response.selectedAnswer === undefined
-        ? null
-        : Number(response.selectedAnswer),
+      normalizeSelectedAnswers(response),
     ]),
   );
 
@@ -32,39 +47,82 @@ const buildStoredResponses = (questionOrder, questions, responses = []) => {
         return null;
       }
 
-      const selectedAnswer = responseMap.has(String(questionId))
-        ? responseMap.get(String(questionId))
-        : null;
-      const isCorrect = selectedAnswer === question.correctAnswer;
+      const sectionKey = normalizeQuestionSectionKey(question, sections);
+      const section = sectionMap[sectionKey] || sections[0];
+      const correctAnswers = normalizeCorrectAnswers(question);
+      const selectedAnswers = responseMap.has(String(questionId)) ? responseMap.get(String(questionId)) : [];
+      const isCorrect = selectedAnswers.length > 0 && sameAnswers(selectedAnswers, correctAnswers);
 
       return {
         questionId: question._id,
         questionText: question.questionText,
         questionImage: question.questionImage || "",
+        sectionKey: section?.key || "main",
+        sectionTitle: section?.title || "Main section",
+        questionFormat: normalizeQuestionFormat(question, sections),
+        marksPerQuestion: Number(section?.marksPerQuestion || 1),
+        marksAwarded: isCorrect ? Number(section?.marksPerQuestion || 1) : 0,
         options: question.options,
-        correctAnswer: question.correctAnswer,
+        correctAnswer: correctAnswers.length === 1 ? correctAnswers[0] : null,
+        correctAnswers,
         explanation: question.explanation,
-        selectedAnswer,
+        selectedAnswer: selectedAnswers.length === 1 ? selectedAnswers[0] : null,
+        selectedAnswers,
         isCorrect,
       };
     })
     .filter(Boolean);
 };
 
-const calculateResultMetrics = (storedResponses) => {
+const validateAttemptLimits = (storedResponses, sections = []) => {
+  const sectionMap = buildSectionMap(sections);
+  const attemptCounts = storedResponses.reduce((counts, response) => {
+    const selectedAnswers = normalizeSelectedAnswers(response);
+
+    if (response.questionFormat === "mcq" && selectedAnswers.length > 1) {
+      throw new Error(`MCQ question in ${response.sectionTitle} cannot have multiple selected answers.`);
+    }
+
+    if (!selectedAnswers.length) {
+      return counts;
+    }
+
+    counts[response.sectionKey] = (counts[response.sectionKey] || 0) + 1;
+    return counts;
+  }, {});
+
+  const overflowSection = sections.find((section) => (attemptCounts[section.key] || 0) > section.attemptLimit);
+
+  if (overflowSection) {
+    const attempted = attemptCounts[overflowSection.key] || 0;
+    throw new Error(`Attempt limit exceeded in ${overflowSection.title}. Allowed ${overflowSection.attemptLimit}, received ${attempted}.`);
+  }
+
+  return { sectionMap, attemptCounts };
+};
+
+const calculateResultMetrics = (storedResponses, sections = []) => {
+  const attemptedCount = storedResponses.filter((response) => normalizeSelectedAnswers(response).length).length;
   const correctCount = storedResponses.filter((response) => response.isCorrect).length;
   const totalQuestions = storedResponses.length;
-  const incorrectCount = totalQuestions - correctCount;
-  const accuracy = totalQuestions
-    ? Number(((correctCount / totalQuestions) * 100).toFixed(2))
+  const incorrectCount = Math.max(attemptedCount - correctCount, 0);
+  const unansweredCount = Math.max(totalQuestions - attemptedCount, 0);
+  const accuracy = attemptedCount
+    ? Number(((correctCount / attemptedCount) * 100).toFixed(2))
     : 0;
+  const score = Number(
+    storedResponses.reduce((total, response) => total + Number(response.marksAwarded || 0), 0).toFixed(2),
+  );
 
   return {
     totalQuestions,
+    attemptedCount,
+    unansweredCount,
     correctCount,
     incorrectCount,
     accuracy,
-    score: correctCount,
+    score,
+    totalMarks: getCategoryTotalMarks({ sections }),
   };
 };
 
@@ -96,8 +154,11 @@ const findFeaturedPublicCategory = async (featuredKey) => {
 };
 
 const buildPublicResult = ({ category, questionOrder, questions, responses, timeTakenSeconds, featuredKey }) => {
-  const storedResponses = buildStoredResponses(questionOrder, questions, responses);
-  const metrics = calculateResultMetrics(storedResponses);
+  const sections = normalizeCategorySections(category);
+  const storedResponses = buildStoredResponses(questionOrder, questions, responses, sections);
+  validateAttemptLimits(storedResponses, sections);
+  const metrics = calculateResultMetrics(storedResponses, sections);
+  const sectionSummaries = buildSectionSummaries(sections, storedResponses);
 
   return {
     id: `public-${featuredKey}`,
@@ -107,23 +168,16 @@ const buildPublicResult = ({ category, questionOrder, questions, responses, time
     submittedAt: new Date().toISOString(),
     timeTakenSeconds: Number(timeTakenSeconds) || 0,
     totalQuestions: metrics.totalQuestions,
+    attemptedCount: metrics.attemptedCount,
+    unansweredCount: metrics.unansweredCount,
     correctCount: metrics.correctCount,
     incorrectCount: metrics.incorrectCount,
     accuracy: metrics.accuracy,
     score: metrics.score,
-    category: {
-      id: category._id,
-      name: category.name,
-      slug: category.slug,
-      description: category.description,
-      examName: category.examName,
-      subjectLabel: category.subjectLabel,
-      testType: category.testType,
-      durationMinutes: category.durationMinutes,
-      questionCount: category.questionCount,
-      isDemo: category.isDemo,
-      demoKey: category.demoKey,
-    },
+    totalMarks: metrics.totalMarks,
+    category: formatCategoryForClient(category),
+    sections,
+    sectionSummaries,
     responses: storedResponses,
   };
 };
@@ -143,6 +197,9 @@ export const startTest = asyncHandler(async (req, res) => {
     throw new Error("Selected test category was not found.");
   }
 
+  const categorySnapshot = category.toObject();
+  const sections = normalizeCategorySections(categorySnapshot);
+  const sectionMap = buildSectionMap(sections);
   const questionBank = await Question.find({ category: categoryId }).lean();
 
   if (!questionBank.length) {
@@ -150,24 +207,39 @@ export const startTest = asyncHandler(async (req, res) => {
     throw new Error("No questions are available for this category yet.");
   }
 
-  const randomizedQuestions = shuffleArray(questionBank).slice(
-    0,
-    Math.min(category.questionCount, questionBank.length),
-  );
+  const randomizedQuestions = sections.flatMap((section) => {
+    const matchingQuestions = questionBank.filter((question) => {
+      const questionSectionKey = normalizeQuestionSectionKey(question, sections);
+      const questionFormat = normalizeQuestionFormat(question, sections);
+
+      return questionSectionKey === section.key && questionFormat === section.questionType;
+    });
+
+    if (matchingQuestions.length < section.questionCount) {
+      res.status(400);
+      throw new Error(
+        `${section.title} needs ${section.questionCount} ${section.questionType.toUpperCase()} questions, but only ${matchingQuestions.length} are available.`,
+      );
+    }
+
+    return shuffleArray(matchingQuestions).slice(0, section.questionCount);
+  });
 
   const attempt = await TestAttempt.create({
     user: req.user._id,
     category: category._id,
     testType: category.testType,
+    sections,
     totalQuestions: randomizedQuestions.length,
+    totalMarks: getCategoryTotalMarks({ sections }),
     questionOrder: randomizedQuestions.map((question) => question._id),
   });
 
   res.status(201).json({
     attemptId: attempt._id,
-    category,
+    category: formatCategoryForClient(categorySnapshot),
     durationMinutes: category.durationMinutes,
-    questions: randomizedQuestions.map(sanitizeQuestion),
+    questions: randomizedQuestions.map((question) => sanitizeQuestion(question, { sections })),
   });
 });
 
@@ -180,6 +252,7 @@ export const startPublicFeaturedTest = asyncHandler(async (req, res) => {
     throw new Error("Featured mock test was not found.");
   }
 
+  const sections = normalizeCategorySections(category);
   const questionBank = await Question.find({ category: category._id }).lean();
 
   if (!questionBank.length) {
@@ -187,10 +260,23 @@ export const startPublicFeaturedTest = asyncHandler(async (req, res) => {
     throw new Error("No questions are available for this featured test yet.");
   }
 
-  const randomizedQuestions = shuffleArray(questionBank).slice(
-    0,
-    Math.min(category.questionCount, questionBank.length),
-  );
+  const randomizedQuestions = sections.flatMap((section) => {
+    const matchingQuestions = questionBank.filter((question) => {
+      const questionSectionKey = normalizeQuestionSectionKey(question, sections);
+      const questionFormat = normalizeQuestionFormat(question, sections);
+
+      return questionSectionKey === section.key && questionFormat === section.questionType;
+    });
+
+    if (matchingQuestions.length < section.questionCount) {
+      res.status(400);
+      throw new Error(
+        `${section.title} needs ${section.questionCount} ${section.questionType.toUpperCase()} questions, but only ${matchingQuestions.length} are available.`,
+      );
+    }
+
+    return shuffleArray(matchingQuestions).slice(0, section.questionCount);
+  });
 
   const sessionToken = jwt.sign(
     {
@@ -206,9 +292,9 @@ export const startPublicFeaturedTest = asyncHandler(async (req, res) => {
   res.json({
     featuredKey,
     sessionToken,
-    category,
+    category: formatCategoryForClient(category),
     durationMinutes: category.durationMinutes,
-    questions: randomizedQuestions.map(sanitizeQuestion),
+    questions: randomizedQuestions.map((question) => sanitizeQuestion(question, { sections })),
   });
 });
 
@@ -231,19 +317,32 @@ export const submitTest = asyncHandler(async (req, res) => {
     throw new Error("This attempt has already been submitted.");
   }
 
+  const sections = normalizeCategorySections(attempt.category?.toObject?.() || attempt.category || { sections: attempt.sections });
   const questions = await Question.find({ _id: { $in: attempt.questionOrder } }).lean();
-  const storedResponses = buildStoredResponses(attempt.questionOrder, questions, responses);
-  const metrics = calculateResultMetrics(storedResponses);
+  const storedResponses = buildStoredResponses(attempt.questionOrder, questions, responses, sections);
+
+  try {
+    validateAttemptLimits(storedResponses, sections);
+  } catch (error) {
+    res.status(400);
+    throw error;
+  }
+
+  const metrics = calculateResultMetrics(storedResponses, sections);
 
   attempt.responses = storedResponses;
   attempt.status = "completed";
   attempt.submittedAt = new Date();
   attempt.timeTakenSeconds = Number(timeTakenSeconds) || 0;
   attempt.totalQuestions = metrics.totalQuestions;
+  attempt.attemptedCount = metrics.attemptedCount;
+  attempt.unansweredCount = metrics.unansweredCount;
   attempt.correctCount = metrics.correctCount;
   attempt.incorrectCount = metrics.incorrectCount;
   attempt.accuracy = metrics.accuracy;
   attempt.score = metrics.score;
+  attempt.totalMarks = metrics.totalMarks;
+  attempt.sections = sections;
 
   await attempt.save();
 
@@ -286,14 +385,21 @@ export const submitPublicFeaturedTest = asyncHandler(async (req, res) => {
   }
 
   const questions = await Question.find({ _id: { $in: decodedSession.questionOrder } }).lean();
-  const result = buildPublicResult({
-    category,
-    questionOrder: decodedSession.questionOrder,
-    questions,
-    responses,
-    timeTakenSeconds,
-    featuredKey,
-  });
+  let result;
+
+  try {
+    result = buildPublicResult({
+      category,
+      questionOrder: decodedSession.questionOrder,
+      questions,
+      responses,
+      timeTakenSeconds,
+      featuredKey,
+    });
+  } catch (error) {
+    res.status(400);
+    throw error;
+  }
 
   res.json(result);
 });

@@ -1,5 +1,6 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 
+import PageTransition from "./PageTransition.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import {
   getRoleDisplayName,
@@ -12,30 +13,40 @@ import {
 
 const AppShell = () => {
   const { logout, user } = useAuth();
+  const location = useLocation();
+  const isTestBuilderRoute = location.pathname === "/admin/tests";
 
   const links =
     user?.role === "admin"
       ? [
-          { to: "/admin", label: "Overview" },
-          { to: "/admin/users", label: "Users" },
-          { to: "/admin/tests", label: "Create a Test" },
-          { to: "/admin/track-boards", label: "Track Boards" },
-          { to: "/admin/notifications", label: "Notifications" },
-          { to: "/admin/feedback", label: "Feedback" },
+          { to: "/admin", label: "Overview", shortLabel: "OV" },
+          { to: "/admin/users", label: "Users", shortLabel: "US" },
+          { to: "/admin/tests", label: "Create a Test", shortLabel: "CT" },
+          { to: "/admin/track-boards", label: "Track Boards", shortLabel: "TB" },
+          { to: "/admin/notifications", label: "Notifications", shortLabel: "NT" },
+          { to: "/admin/feedback", label: "Feedback", shortLabel: "FB" },
         ]
       : user?.role === "editor"
         ? [
-            { to: "/admin/tests", label: "Create a Test" },
-            { to: "/admin/track-boards", label: "Track Boards" },
-            { to: "/admin/notifications", label: "Notifications" },
+            { to: "/admin/tests", label: "Create a Test", shortLabel: "CT" },
+            { to: "/admin/track-boards", label: "Track Boards", shortLabel: "TB" },
+            { to: "/admin/notifications", label: "Notifications", shortLabel: "NT" },
           ]
       : [
-          { to: "/dashboard", label: "Dashboard" },
-          { to: "/attempts", label: "Previous Attempts" },
+          { to: "/dashboard", label: "Dashboard", shortLabel: "DB" },
+          { to: "/attempts", label: "Previous Attempts", shortLabel: "AT" },
         ];
 
   const dashboardTitle = getWorkspaceTitleForRole(user?.role);
   const dashboardHome = getWorkspacePathForRole(user?.role);
+  const compactUserLabel =
+    user?.name
+      ?.trim()
+      .split(/\s+/)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "U";
 
   return (
     <div className="dashboard-page">
@@ -62,8 +73,8 @@ const AppShell = () => {
       </header>
 
       <div className="dashboard-main-wrap">
-        <div className="app-shell home-shell">
-          <aside className="sidebar">
+        <div className={`app-shell home-shell ${isTestBuilderRoute ? "app-shell-compact" : ""}`}>
+          <aside className={`sidebar ${isTestBuilderRoute ? "sidebar-compact" : ""}`}>
             <div className="sidebar-head">
               <div>
                 <p className="sidebar-eyebrow">{getWorkspaceEyebrowForRole(user?.role)}</p>
@@ -78,16 +89,19 @@ const AppShell = () => {
                 <NavLink
                   key={link.to}
                   to={link.to}
+                  title={link.label}
+                  aria-label={link.label}
                   className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
                 >
-                  {link.label}
+                  <span className="nav-link-full">{link.label}</span>
+                  <span className="nav-link-short">{link.shortLabel}</span>
                 </NavLink>
               ))}
             </nav>
 
             <div className="sidebar-user">
-              <div>
-                <p>{user?.name}</p>
+              <div title={user?.name}>
+                <p>{isTestBuilderRoute ? compactUserLabel : user?.name}</p>
                 <span>{getRoleDisplayName(user?.role)}</span>
               </div>
               <button type="button" className="button button-ghost" onClick={logout}>
@@ -104,9 +118,11 @@ const AppShell = () => {
               </div>
             </header>
 
-            <main className="page-content">
-              <Outlet />
-            </main>
+            <PageTransition scope="workspace">
+              <main className="page-content">
+                <Outlet />
+              </main>
+            </PageTransition>
           </div>
         </div>
       </div>

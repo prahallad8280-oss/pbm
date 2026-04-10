@@ -1,7 +1,9 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import AppShell from "./components/layout/AppShell.jsx";
+import PageTransition from "./components/layout/PageTransition.jsx";
 import ProtectedRoute from "./components/layout/ProtectedRoute.jsx";
+import RouteFeedback from "./components/layout/RouteFeedback.jsx";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage.jsx";
 import FeedbackManagerPage from "./pages/admin/FeedbackManagerPage.jsx";
 import NotificationManagerPage from "./pages/admin/NotificationManagerPage.jsx";
@@ -20,46 +22,98 @@ import TestAttemptPage from "./pages/user/TestAttemptPage.jsx";
 import TestResultPage from "./pages/user/TestResultPage.jsx";
 
 const App = () => (
-  <Routes>
-    <Route path="/" element={<LandingPage />} />
-    <Route path="/login" element={<LoginPage />} />
-    <Route path="/register" element={<RegisterPage />} />
-    <Route path="/exam-tracks/:slug" element={<ExamTrackPage />} />
-    <Route path="/open-tests/:featuredKey" element={<PublicTestAttemptPage />} />
-    <Route path="/open-tests/:featuredKey/result" element={<PublicTestResultPage />} />
+  <>
+    <RouteFeedback />
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <PageTransition>
+            <LandingPage />
+          </PageTransition>
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <PageTransition>
+            <LoginPage />
+          </PageTransition>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PageTransition>
+            <RegisterPage />
+          </PageTransition>
+        }
+      />
+      <Route
+        path="/exam-tracks/:slug"
+        element={
+          <PageTransition>
+            <ExamTrackPage />
+          </PageTransition>
+        }
+      />
+      <Route
+        path="/open-tests/:featuredKey"
+        element={
+          <PageTransition>
+            <PublicTestAttemptPage />
+          </PageTransition>
+        }
+      />
+      <Route
+        path="/open-tests/:featuredKey/result"
+        element={
+          <PageTransition>
+            <PublicTestResultPage />
+          </PageTransition>
+        }
+      />
 
-    <Route element={<ProtectedRoute roles={["user", "admin"]} />}>
-      <Route path="/tests/start/:categoryId" element={<TestAttemptPage />} />
-    </Route>
-
-    <Route element={<ProtectedRoute roles={["user", "admin"]} />}>
-      <Route element={<AppShell />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/attempts" element={<AttemptHistoryPage />} />
-        <Route path="/results/:attemptId" element={<TestResultPage />} />
+      <Route element={<ProtectedRoute roles={["user", "admin"]} />}>
+        <Route
+          path="/tests/start/:categoryId"
+          element={
+            <PageTransition>
+              <TestAttemptPage />
+            </PageTransition>
+          }
+        />
       </Route>
-    </Route>
 
-    <Route element={<ProtectedRoute roles={["admin", "editor"]} />}>
-      <Route element={<AppShell />}>
-        <Route path="/admin/tests" element={<TestBuilderPage />} />
-        <Route path="/admin/track-boards" element={<TrackBoardManagerPage />} />
-        <Route path="/admin/questions" element={<Navigate to="/admin/tests" replace />} />
-        <Route path="/admin/categories" element={<Navigate to="/admin/tests" replace />} />
-        <Route path="/admin/notifications" element={<NotificationManagerPage />} />
+      <Route element={<ProtectedRoute roles={["user", "admin"]} />}>
+        <Route element={<AppShell />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/attempts" element={<AttemptHistoryPage />} />
+          <Route path="/results/:attemptId" element={<TestResultPage />} />
+        </Route>
       </Route>
-    </Route>
 
-    <Route element={<ProtectedRoute roles={["admin"]} />}>
-      <Route element={<AppShell />}>
-        <Route path="/admin" element={<AdminDashboardPage />} />
-        <Route path="/admin/feedback" element={<FeedbackManagerPage />} />
-        <Route path="/admin/users" element={<UserManagerPage />} />
+      <Route element={<ProtectedRoute roles={["admin", "editor"]} />}>
+        <Route element={<AppShell />}>
+          <Route path="/admin/tests" element={<TestBuilderPage />} />
+          <Route path="/admin/track-boards" element={<TrackBoardManagerPage />} />
+          <Route path="/admin/questions" element={<Navigate to="/admin/tests" replace />} />
+          <Route path="/admin/categories" element={<Navigate to="/admin/tests" replace />} />
+          <Route path="/admin/notifications" element={<NotificationManagerPage />} />
+        </Route>
       </Route>
-    </Route>
 
-    <Route path="*" element={<Navigate to="/" replace />} />
-  </Routes>
+      <Route element={<ProtectedRoute roles={["admin"]} />}>
+        <Route element={<AppShell />}>
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/feedback" element={<FeedbackManagerPage />} />
+          <Route path="/admin/users" element={<UserManagerPage />} />
+        </Route>
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  </>
 );
 
 export default App;

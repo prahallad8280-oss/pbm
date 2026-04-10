@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import api from "../../api/client.js";
+import MathText from "../../components/common/MathText.jsx";
 
 const DashboardPage = () => {
   const [categories, setCategories] = useState([]);
@@ -90,10 +91,13 @@ const DashboardPage = () => {
               <article key={category._id} className="test-line-item">
                 <div>
                   <p className="pill">Subject</p>
-                  <h4>{category.name}</h4>
-                  <p className="muted-text">{category.description}</p>
+                  <h4>
+                    <MathText inline text={category.name} />
+                  </h4>
+                  <MathText className="muted-text" text={category.description} />
                   <p className="test-line-meta">
-                    {category.questionCount} questions | {category.durationMinutes} mins
+                    {category.questionCount} questions | attempt {category.attemptableCount} | {category.totalMarks} marks |{" "}
+                    {category.durationMinutes} mins
                   </p>
                 </div>
 
@@ -122,10 +126,13 @@ const DashboardPage = () => {
               <article key={category._id} className="test-line-item">
                 <div>
                   <p className="pill pill-alt">FLT</p>
-                  <h4>{category.name}</h4>
-                  <p className="muted-text">{category.description}</p>
+                  <h4>
+                    <MathText inline text={category.name} />
+                  </h4>
+                  <MathText className="muted-text" text={category.description} />
                   <p className="test-line-meta">
-                    {category.questionCount} questions | {category.durationMinutes} mins
+                    {category.questionCount} questions | attempt {category.attemptableCount} | {category.totalMarks} marks |{" "}
+                    {category.durationMinutes} mins
                   </p>
                 </div>
 

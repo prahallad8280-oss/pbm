@@ -14,17 +14,10 @@ const ExamInstructionScreen = ({
     subjectLabel: category?.subjectLabel || category?.name,
     durationMinutes: category?.durationMinutes,
   });
+  const sectionRules = category?.sections || [];
 
   return (
     <div className="exam-page">
-      <div className="exam-brand-strip">
-        <div className="exam-brand-badge">NTA Pattern</div>
-        <div className="exam-brand-title">
-          <strong>{category?.examName || "CSIR"}</strong>
-          <span>{category?.subjectLabel || category?.name}</span>
-        </div>
-      </div>
-
       <div className="exam-instructions-shell">
         <div className="exam-instructions-card">
           <h1>Please read the instructions carefully</h1>
@@ -51,6 +44,30 @@ const ExamInstructionScreen = ({
             </section>
           ))}
 
+          {sectionRules.length ? (
+            <section className="instruction-section">
+              <h2>Section pattern:</h2>
+              <div className="instruction-section-table">
+                <div className="instruction-section-row instruction-section-row-head">
+                  <span>Section</span>
+                  <span>Format</span>
+                  <span>Attempt</span>
+                  <span>Marks</span>
+                </div>
+                {sectionRules.map((section) => (
+                  <div key={section.key} className="instruction-section-row">
+                    <span>{section.title}</span>
+                    <span>{section.questionType.toUpperCase()}</span>
+                    <span>
+                      {section.attemptLimit}/{section.questionCount}
+                    </span>
+                    <span>{section.marksPerQuestion}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           <label className="instruction-consent">
             <input type="checkbox" checked={consentAccepted} onChange={(event) => onConsentChange(event.target.checked)} />
             <span>{instructionConsentText}</span>
@@ -63,8 +80,6 @@ const ExamInstructionScreen = ({
           </div>
         </div>
       </div>
-
-      <footer className="exam-footer">© All Rights Reserved - National Testing Agency</footer>
 
       {showWarning ? (
         <div className="instruction-warning-overlay">
@@ -83,3 +98,4 @@ const ExamInstructionScreen = ({
 };
 
 export default ExamInstructionScreen;
+

@@ -4,6 +4,7 @@ import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import api from "../../api/client.js";
 import LoginForm from "../../components/auth/LoginForm.jsx";
 import RegisterForm from "../../components/auth/RegisterForm.jsx";
+import MathText from "../../components/common/MathText.jsx";
 import { getExamTrackBySlug } from "../../data/examTracks.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { getWorkspaceLabelForRole, getWorkspacePathForRole } from "../../utils/roleRoutes.js";
@@ -145,8 +146,10 @@ const ExamTrackPage = () => {
         <section className="track-hero-section">
           <div className="home-shell">
             <p className="section-tag">{track.eyebrow}</p>
-            <h1 className="track-page-title">{track.title}</h1>
-            <p className="track-page-summary">{track.intro}</p>
+            <h1 className="track-page-title">
+              <MathText inline text={track.title} />
+            </h1>
+            <MathText className="track-page-summary" text={track.intro} />
           </div>
         </section>
 
@@ -155,7 +158,7 @@ const ExamTrackPage = () => {
             <div className="track-detail-copy">
               <p className="section-tag">Overview</p>
               {(deepDive?.overview || track.details).map((detail) => (
-                <p key={detail}>{detail}</p>
+                <MathText key={detail} text={detail} />
               ))}
             </div>
 
@@ -163,7 +166,9 @@ const ExamTrackPage = () => {
               <p className="section-tag">{deepDive ? "Why choose this exam" : "Focus areas"}</p>
               <ul className="info-list">
                 {(deepDive?.whyChoose || track.highlights).map((item) => (
-                  <li key={item}>{item}</li>
+                  <li key={item}>
+                    <MathText inline text={item} />
+                  </li>
                 ))}
               </ul>
             </aside>
@@ -187,7 +192,7 @@ const ExamTrackPage = () => {
                         className={`track-board-button track-board-button-${(index % 5) + 1} ${isOpen ? "is-open" : ""}`}
                         onClick={() => setExpandedBoardId((current) => (current === board._id ? null : board._id))}
                       >
-                        <span>{board.title}</span>
+                        <MathText inline text={board.title} />
                         <span className="track-board-toggle">{isOpen ? "-" : "+"}</span>
                       </button>
 
@@ -201,7 +206,7 @@ const ExamTrackPage = () => {
                                 className="track-board-item"
                                 onClick={() => handleBoardLink(item.link)}
                               >
-                                <span>{item.title}</span>
+                                <MathText inline text={item.title} />
                                 <span className="track-board-item-icon">&#8599;</span>
                               </button>
                             ))}
@@ -225,11 +230,11 @@ const ExamTrackPage = () => {
 
                 <div className="track-structure-meta">
                   <p>
-                    <strong>Duration:</strong> {deepDive.examStructure.duration}
+                    <strong>Duration:</strong> <MathText inline text={deepDive.examStructure.duration} />
                   </p>
                   {deepDive.examStructure.notes.map((note) => (
                     <p key={note}>
-                      <strong>Note:</strong> {note}
+                      <strong>Note:</strong> <MathText inline text={note} />
                     </p>
                   ))}
                 </div>
@@ -247,10 +252,10 @@ const ExamTrackPage = () => {
                     <tbody>
                       {deepDive.examStructure.rows.map((row) => (
                         <tr key={row.section}>
-                          <td>{row.section}</td>
-                          <td>{row.nature || "-"}</td>
-                          <td>{row.attempt || "-"}</td>
-                          <td>{row.marks}</td>
+                          <td><MathText inline text={row.section} /></td>
+                          <td><MathText inline text={row.nature || "-"} /></td>
+                          <td><MathText inline text={row.attempt || "-"} /></td>
+                          <td><MathText inline text={row.marks} /></td>
                         </tr>
                       ))}
                     </tbody>
@@ -263,19 +268,25 @@ const ExamTrackPage = () => {
               <div className="home-shell">
                 <p className="section-tag">Syllabus breakdown</p>
                 <h2 className="track-section-title">Mathematical Sciences syllabus</h2>
-                <p className="track-page-summary track-inline-summary">{deepDive.syllabusIntro}</p>
+                <MathText className="track-page-summary track-inline-summary" text={deepDive.syllabusIntro} />
 
                 <div className="track-syllabus-list">
                   {deepDive.syllabusUnits.map((unit) => (
                     <article key={unit.title} className="track-unit-block">
-                      <h3>{unit.title}</h3>
+                      <h3>
+                        <MathText inline text={unit.title} />
+                      </h3>
                       <div className="track-subtopic-list">
                         {unit.groups.map((group) => (
                           <div key={`${unit.title}-${group.label}`} className="track-subtopic-block">
-                            <h4>{group.label}</h4>
+                            <h4>
+                              <MathText inline text={group.label} />
+                            </h4>
                             <ul className="track-plain-list">
                               {group.items.map((item) => (
-                                <li key={item}>{item}</li>
+                                <li key={item}>
+                                  <MathText inline text={item} />
+                                </li>
                               ))}
                             </ul>
                           </div>
@@ -294,7 +305,9 @@ const ExamTrackPage = () => {
                   <h2 className="track-section-title">Best fit for this exam track</h2>
                   <ul className="track-plain-list">
                     {deepDive.whoShouldPrepare.map((item) => (
-                      <li key={item}>{item}</li>
+                      <li key={item}>
+                        <MathText inline text={item} />
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -304,19 +317,27 @@ const ExamTrackPage = () => {
                   <h2 className="track-section-title">Qualification and age rules</h2>
 
                   <div className="track-eligibility-block">
-                    <h3>{deepDive.eligibility.educationTitle}</h3>
+                    <h3>
+                      <MathText inline text={deepDive.eligibility.educationTitle} />
+                    </h3>
                     <ul className="track-plain-list">
                       {deepDive.eligibility.education.map((item) => (
-                        <li key={item}>{item}</li>
+                        <li key={item}>
+                          <MathText inline text={item} />
+                        </li>
                       ))}
                     </ul>
                   </div>
 
                   <div className="track-eligibility-block">
-                    <h3>{deepDive.eligibility.ageTitle}</h3>
+                    <h3>
+                      <MathText inline text={deepDive.eligibility.ageTitle} />
+                    </h3>
                     <ul className="track-plain-list">
                       {deepDive.eligibility.age.map((item) => (
-                        <li key={item}>{item}</li>
+                        <li key={item}>
+                          <MathText inline text={item} />
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -330,7 +351,9 @@ const ExamTrackPage = () => {
                 <h2 className="track-section-title">What to keep in mind while preparing</h2>
                 <ul className="track-plain-list">
                   {deepDive.importantNotes.map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={item}>
+                      <MathText inline text={item} />
+                    </li>
                   ))}
                 </ul>
 
@@ -361,7 +384,9 @@ const ExamTrackPage = () => {
               <h2 className="track-section-title">This track can grow with notices, PYQs, mocks, and revision material.</h2>
               <ul className="track-resource-list">
                 {track.resources.map((item) => (
-                  <li key={item}>{item}</li>
+                  <li key={item}>
+                    <MathText inline text={item} />
+                  </li>
                 ))}
               </ul>
 

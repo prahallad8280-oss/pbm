@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import api from "../../api/client.js";
+import MathText from "../../components/common/MathText.jsx";
 
 const AttemptHistoryPage = () => {
   const [attempts, setAttempts] = useState([]);
@@ -55,7 +56,9 @@ const AttemptHistoryPage = () => {
               <tbody>
                 {attempts.map((attempt) => (
                   <tr key={attempt.id}>
-                    <td>{attempt.category?.name}</td>
+                    <td>
+                      <MathText inline text={attempt.category?.name || ""} />
+                    </td>
                     <td>{attempt.category?.testType === "flt" ? "FLT" : "Subject"}</td>
                     <td>
                       {attempt.score}/{attempt.totalQuestions}

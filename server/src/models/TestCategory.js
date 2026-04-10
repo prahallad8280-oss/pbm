@@ -1,5 +1,42 @@
 import mongoose from "mongoose";
 
+const sectionSchema = new mongoose.Schema(
+  {
+    key: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+    },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    questionCount: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    attemptLimit: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    marksPerQuestion: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    questionType: {
+      type: String,
+      enum: ["mcq", "msq"],
+      default: "mcq",
+    },
+  },
+  { _id: false },
+);
+
 const testCategorySchema = new mongoose.Schema(
   {
     name: {
@@ -44,6 +81,10 @@ const testCategorySchema = new mongoose.Schema(
       required: true,
       min: 1,
       default: 20,
+    },
+    sections: {
+      type: [sectionSchema],
+      default: undefined,
     },
     isActive: {
       type: Boolean,
